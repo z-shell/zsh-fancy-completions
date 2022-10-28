@@ -1,0 +1,40 @@
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
+#
+# Copyright (c) 2022 Salvydas Lukosius
+
+builtin emulate -L zsh ${=${options[xtrace]:#off}:+-o xtrace}
+builtin setopt extended_glob warn_create_global typeset_silent
+
+case $("$OSTYPE" | tr '[:upper:]' '[:lower:]') in
+  android*)
+    typeset OS='android'
+    ;;
+  darwin*)
+    typeset OS='darwin'
+    ;;
+  linux*)
+    typeset OS='linux'
+    ;;
+  freebsd*)
+    typeset OS='freebsd'
+    ;;
+  netbsd*)
+    typeset OS='netbsd'
+    ;;
+  openbsd*)
+    typeset OS='openbsd'
+    ;;
+  sunos*)
+    typeset OS='solaris'
+    ;;
+  msys* | cygwin* | mingw*)
+    typeset OS='windows'
+    ;;
+  nt | win*)
+    typeset OS='windows'
+    ;;
+  *)
+    typeset OS='unknown'
+    ;;
+  esac
