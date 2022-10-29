@@ -1,0 +1,18 @@
+---
+blank_issues_enabled: true
+contact_links:
+  - name: Wiki
+    url: https://wiki.zshell.dev
+    about: Knowledge base
+  - name: Discussions
+    url: https://github.com/orgs/z-shell/discussions
+    about: Please ask and answer questions here
+  - name: Matrix
+    url: https://app.element.io/#/room/#zshell:matrix.org
+    about: An open network for secure, decentralized communication
+  - name: Slack
+    url: https://join.slack.com/t/z-shell/shared_invite/zt-16twpopd2-p08ROUeT2aGZ5njJwysawA
+    about: Workspace to collaborate and ask and answer questions
+  - name: Crowdin
+    url: https://digitalclouds.crowdin.com/z-shell
+    about: Translation and localization management
