@@ -2,8 +2,7 @@ name: "📚 Documentation"
 description: The issue request for changes indocumentation
 title: "[docs]: "
 labels: ["documentation 📝"]
-assignees:
-  - @z-shell/members
+assignees: "@z-shell/members"
 body:
   - type: markdown
     attributes:
