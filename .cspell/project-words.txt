@@ -1,0 +1,5 @@
+ARGZERO
+autoload
+fpath
+PMSPEC
+zstyle
