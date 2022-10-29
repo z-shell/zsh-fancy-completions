@@ -1,0 +1,221 @@
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
+#
+# Copyright (c) 2022 Salvydas Lukosius
+
+builtin emulate -L zsh ${=${options[xtrace]:#off}:+-o xtrace}
+builtin setopt extended_glob warn_create_global typeset_silent no_short_loops rc_quotes no_auto_pushd
+
+# Defaults
+
+# Adjust color-completion style
+zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*'  list-colors  'reply=( "=(#b)(*$PREFIX)(?)*=00=$color[green]=$color[bg-green]" )'
+
+# Adjust completion to offer fish-style highlighting for extra-verbose command completion:
+zstyle -e ':completion:*:-command-:*:commands'	list-colors 'reply=( '\''=(#b)('\''$words[CURRENT]'\''|)*-- #(*)=0=38;5;45=38;5;136'\'' '\''=(#b)('\''$words[CURRENT]'\''|)*=0=38;5;45'\'' )'
+
+# Adjust selection prompt style
+zstyle ':completion:*' select-prompt %SScrolling active: current selection at %P Lines: %m
+
+# Adjust match count style
+zstyle ':completion:*:default' list-prompt '%S%M matches%s'
+
+# Enable autocomplete
+zstyle ':completion:*' use-compctl false
+
+# Enable cache - Some functions, like _apt and _dpkg, are very slow.
+# Can use a cache in order to proxy the list of results (like the list of available debian packages)
+zstyle ':completion:*' accept-exact '*(N)'
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path ${ZI[CACHE_DIR]:-${XDG_DATA_HOME:-$ZDOTDIR:-$HOME}/.cache}
+
+# Adjust case-insensitive completions for: (all),partial-word and then substring matches
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'm:ss=ß m:ue=ü m:ue=Ü m:oe=ö m:oe=Ö m:ae=ä m:ae=Ä m:{a-zA-Zöäüa-zÖÄÜ}={A-Za-zÖÄÜA-Zöäü}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+
+# Enable menu selection
+zstyle ':completion:*:*:*:*:*'		menu select
+
+# Group matches and describe
+zstyle ':completion:*:options' description 'yes'
+zstyle ':completion:*:options' auto-description '%d'
+zstyle ':completion:*:corrections' format ' %F{green}» %d (errors: %e) «%f'
+zstyle ':completion:*:descriptions' format ' %F{yellow}» %d «%f'
+zstyle ':completion:*:messages' format ' %F{purple}» %d «%f'
+zstyle ':completion:*:warnings' format ' %F{red}» no matches found «%f'
+zstyle ':completion:*' format ' %F{yellow}» %d «%f'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' verbose yes
+
+# Determine in which order the names (files) should be listed and completed when using menu completion
+# - `size' to sort them by the size of the file
+# - `links' to sort them by the number of links to the file
+# - `modification' or `time' or `date' to sort them by the last modification time
+# - `access' to sort them by the last access time
+# - `inode' or `change' to sort them by the last inode change time
+# - `reverse' to sort in decreasing order
+
+# If the style is set to any other value, or is unset, files will be sorted alphabetically by name
+zstyle ':completion:*' file-sort name
+
+# Enable verbose completions (similar to fish shell)
+zstyle ':completion:*'  extra-verbose true
+
+# Enable matches to separate into groups
+zstyle ':completion:*:matches' group 'yes'
+
+# The completion system can group different types of matches, which appear in separate lists
+zstyle ':completion:*:*:-command-:*:commands' group-name commands
+zstyle ':completion:*:*:-command-:*:functions' group-name functions
+
+# Shell builtin functions and external commands appear in that order when completing in command position
+zstyle ':completion:*:*:-command-:*:*' group-order builtins functions commands
+
+# How many completions switch on menu selection use 'long' to start menu completion
+zstyle ':completion:*' menu select=long
+
+# If there are more than 5 options, allow selecting from a menu with arrows (case insensitive completion!)
+zstyle ':completion:*-case' menu select=5
+
+# Enable rehash on completion so new installed program are found automatically
+zstyle ':completion:::::'	completer _complete _approximate
+_force_rehash() {
+  (( CURRENT == 1 )) && rehash
+  return 1	# Because we didn't really complete anything
+}
+
+zstyle ':completion:::::'	completer _force_rehash _complete _approximate
+
+# Fuzzy match mistyped completions.
+zstyle ':completion:*' completer _complete _match _approximate
+zstyle ':completion:*:match:*' original only
+
+# Adjust mismatch handling - allow one error for every three characters typed in approximate completer
+zstyle ':completion:*:approximate:*'    max-errors 1 numeric
+zstyle -e ':completion:*:approximate:*' max-errors 'reply=( $((($#PREFIX+$#SUFFIX)/3 )) numeric )'
+
+# Increase the number of errors based on the length of the typed word. But make
+# sure to cap (at 7) the max-errors to avoid hanging.
+zstyle -e ':completion:*:approximate:*' max-errors 'reply=($((($#PREFIX+$#SUFFIX)/3>7?7:($#PREFIX+$#SUFFIX)/3))numeric)'
+
+# Prevent completion of functions for unavailable commands
+zstyle ':completion:*:functions' ignored-patterns '(_*|pre(cmd|exec))'
+
+# Prevent files to be ignored from zcompile
+zstyle ':completion:*:*:zcompile:*'	ignored-patterns '(*~|*.zwc)'
+zstyle ':completion:correct:' prompt 'correct to: %e'
+
+# Array completion element sorting.
+zstyle ':completion:*:*:-subscript-:*' tag-order indexes parameters
+
+# Directories completion
+zstyle ':completion:*:-tilde-:*' group-order 'named-directories' 'path-directories' 'users' 'expand'
+
+# Prevent trailing slash if argument is a directory
+zstyle ':completion:*' squeeze-slashes true
+zstyle ':completion::complete:*' '\\'
+
+# Prevent completion of backup files as executables
+zstyle ':completion:*:complete:-command-::commands' ignored-patterns '*\~'
+
+# Prevent these filename suffixes to ignore during completion (except after rm command)
+zstyle ':completion:*:*:(^rm):*:*files' ignored-patterns  '*?.(o|c~|old|pro|zwc)' '*~'
+
+# Prevent CVS files/directories from being completed
+zstyle ':completion:*:(all-|)files'	ignored-patterns '(|*/)CVS'
+zstyle ':completion:*:cd:*'		ignored-patterns '(*/)#CVS'
+
+# Prevent commands like `rm'
+zstyle ':completion:*:rm:*'		ignore-line yes
+
+# Enable . and .. as a completion
+zstyle -e ':completion:*'	special-dirs '[[ $PREFIX = (../)#(|.|..) ]] && reply=(..)'
+
+# History
+# Prevent menu completion for duplicate entries
+zstyle ':completion:*:history-words' stop yes
+zstyle ':completion:*:history-words' remove-all-dups yes
+zstyle ':completion:*:history-words' list false
+
+# Enable history menu selection
+zstyle ':completion:*:history-words'	menu yes
+
+# Environment Variables
+zstyle ':completion::*:(-command-|export):*' fake-parameters ${${${_comps[(I)-value-*]#*,}%%,*}:#-*-}
+
+# Populate hostname completion.
+zstyle -e ':completion:*:hosts' hosts 'reply=(
+  ${=${=${=${${(f)"$(cat {/etc/ssh/ssh_,~/.ssh/}known_hosts(|2)(N) 2> /dev/null)"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ }
+  ${=${(f)"$(cat /etc/hosts(|)(N) <<(ypcat hosts 2> /dev/null))"}%%(\#${_etc_host_ignores:+|${(j:|:)~_etc_host_ignores}})*}
+  ${=${${${${(@M)${(f)"$(cat ~/.ssh/config 2> /dev/null)"}:#Host *}#Host }:#*\**}:#*\?*}}
+)'
+
+# Adjust hosts style (background = red, foreground = black)
+zstyle ':completion:*:*:*:*:hosts'	list-colors '=*=30;41'
+
+# Enable expand completer for all expansions
+zstyle ':completion:*:expand:*' tag-order all-expansions
+zstyle ':completion:*:history-words'  list false
+
+# Enable ~/userbane expansions
+zstyle ':completion:*:-tilde-:*' group-order 'named-directories' 'path-directories' 'users' 'expand'
+
+# Adjust usernames style (background = white, foreground = blue)
+zstyle ':completion:*:*:*:*:users'	list-colors '=*=34;47'
+
+# Don't complete uninteresting users
+zstyle ':completion:*:*:*:users' ignored-patterns adm amanda apache avahi beaglidx bin cacti canna clamav daemon \
+  dbus distcache dovecot fax ftp games gdm gkrellmd gopher hacluster haldaemon halt hsqldb ident junkbust ldap lp \
+  mail mailman mailnull mldonkey mysql nagios named netdump news nfsnobody nobody nscd ntp nut nx openvpn operator \
+  pcap postfix postgres privoxy pulse pvm quagga radvd rpc rpcuser rpm shutdown squid sshd sync uucp vcsa xfs '_*'
+
+# ... unless we really want to.
+zstyle '*' single-ignored show
+
+# Ignore multiple entries.
+zstyle ':completion:*:(rm|kill|diff):*' ignore-line other
+zstyle ':completion:*:rm:*' file-patterns '*:all-files'
+
+# Kill processes completion
+zstyle ':completion:*:*:*:*:processes' command 'ps -u $LOGNAME -o pid,user,command -w'
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#) ([0-9a-z-]#)*=01;36=0=01'
+zstyle ':completion:*:*:kill:*' menu yes select
+zstyle ':completion:*:*:kill:*' force-list always
+zstyle ':completion:*:*:kill:*' insert-ids single
+
+# Enable processes completion for all user processes
+zstyle ':completion:*:processes'	command 'ps -au$USER'
+
+# Enable more processes in completion of programs like killall:
+zstyle ':completion:*:processes-names'	command 'ps c -u ${USER} -o command | uniq'
+zstyle ':completion:*:(killall|pkill|kill):*'	menu yes select
+zstyle ':completion:*:(killall|pkill|kill):*'	force-list always
+
+# Man
+zstyle ':completion:*:manuals' separate-sections true
+zstyle ':completion:*:manuals.*' insert-sections   true
+zstyle ':completion:*:man:*' menu yes select
+
+# Media Players
+zstyle ':completion:*:*:mpg123:*' file-patterns '*.(mp3|MP3):mp3\ files *(-/):directories'
+zstyle ':completion:*:*:mpg321:*' file-patterns '*.(mp3|MP3):mp3\ files *(-/):directories'
+zstyle ':completion:*:*:ogg123:*' file-patterns '*.(ogg|OGG|flac):ogg\ files *(-/):directories'
+zstyle ':completion:*:*:mocp:*' file-patterns '*.(wav|WAV|mp3|MP3|ogg|OGG|flac):ogg\ files *(-/):directories'
+
+# Mutt
+if [[ -s "$HOME/.mutt/aliases" ]]; then
+  zstyle ':completion:*:*:mutt:*' menu yes select
+  zstyle ':completion:*:mutt:*' users ${${${(f)"$(<"$HOME/.mutt/aliases")"}#alias[[:space:]]}%%[[:space:]]*}
+fi
+
+# SSH/SCP/RSYNC
+zstyle ':completion:*:(ssh|scp|rsync):*' tag-order 'hosts:-host:host hosts:-domain:domain hosts:-ipaddr:ip\ address *'
+zstyle ':completion:*:(scp|rsync):*' group-order users files all-files hosts-domain hosts-host hosts-ipaddr
+zstyle ':completion:*:ssh:*' tag-order 'hosts:-host:host hosts:-domain:domain hosts:-ipaddr:ip\ address *'
+zstyle ':completion:*:ssh:*' group-order users hosts-domain hosts-host users hosts-ipaddr
+zstyle ':completion:*:(ssh|scp|rsync):*:hosts-host' ignored-patterns '*(.|:)*' loopback ip6-loopback localhost ip6-localhost broadcasthost
+zstyle ':completion:*:(ssh|scp|rsync):*:hosts-domain' ignored-patterns '<->.<->.<->.<->' '^[-[:alnum:]]##(.[-[:alnum:]]##)##' '*@*'
+zstyle ':completion:*:(ssh|scp|rsync):*:hosts-ipaddr' ignored-patterns '^(<->.<->.<->.<->|(|::)([[:xdigit:].]##:(#c,2))##(|%*))' '127.0.0.<->' '255.255.255.255' '::1' 'fe80::*'
+
+# Search path for sudo completion
+zstyle ':completion:*:sudo:*'	command-path /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin /usr/X11R6/bin
