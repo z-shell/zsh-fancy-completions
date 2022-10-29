@@ -2,6 +2,7 @@ name: "🐞 Bug report"
 description: File a bug report
 title: "[bug]: "
 labels: ["bug 🐞", "triage 📑"]
+assignees: "@z-shell/members"
 body:
   - type: markdown
     attributes:
@@ -32,13 +33,21 @@ body:
       description: "Please describe how the bug manifests"
     validations:
       required: true
-  - type: textarea
-    id: reproduce
-    attributes:
-      label: Steps to reproduce
-      description: "Explain the steps required to duplicate the issue"
-    validations:
-      required: true
+- type: textarea
+  id: repro
+  attributes:
+    label: Steps to reproduce
+    description: "How do you trigger this bug? Please walk us through it step by step."
+    value: |
+      1.
+      2.
+      3.
+      4.
+      5.
+      ...
+    render: bash
+  validations:
+    required: true
   - type: textarea
     id: code-snippet
     attributes:
