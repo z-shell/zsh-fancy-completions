@@ -33,21 +33,21 @@ body:
       description: "Please describe how the bug manifests"
     validations:
       required: true
-- type: textarea
-  id: repro
-  attributes:
-    label: Steps to reproduce
-    description: "How do you trigger this bug? Please walk us through it step by step."
-    value: |
-      1.
-      2.
-      3.
-      4.
-      5.
-      ...
-    render: bash
-  validations:
-    required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: "How do you trigger this bug? Please walk us through it step by step."
+      value: |
+        1.
+        2.
+        3.
+        4.
+        5.
+        ...
+      render: bash
+    validations:
+      required: true
   - type: textarea
     id: code-snippet
     attributes:
