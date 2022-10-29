@@ -22,14 +22,9 @@ if [[ $PMSPEC != *f* ]]; then
   fpath+=( "${0:h}/functions" )
 fi
 
-# Zsh's cache directory
-[[ -z $ZSH_CACHE_DIR ]] && typeset -gx ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/zi"
-[[ -d $ZSH_CACHE_DIR ]] || command mkdir -p "$ZSH_CACHE_DIR"
-
-autoload -Uz .os-type .compatibility .options .variables .initialization .styles
-
-.compatibility
-.options
-.variables
-.initialization
-.styles
+autoload -Uz .os-type .completion-{initialization,compatibility,variables,options,zstyle}
+.completion-initialization
+.completion-compatibility
+.completion-variables
+.completion-options
+.completion-zstyle
