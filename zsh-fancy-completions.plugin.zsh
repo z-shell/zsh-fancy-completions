@@ -18,6 +18,7 @@ fi
 typeset -gA Plugins
 Plugins[ZF_COMP_DIR]="${0:h}"
 Plugins[TAB_COMP]="${0:h}/functions/.tabcompletion"
+Plugins[AUTO_COMP]="${0:h}/functions/.autocomplete"
 
 # https://wiki.zshell.dev/community/zsh_plugin_standard#funtions-directory
 if [[ $PMSPEC != *f* ]]; then
@@ -26,6 +27,8 @@ fi
 
 if (( ZI[SOURCED] )) then
   source ${Plugins[TAB_COMP]}
+  Plugins[ZF_COMP_ON]="TAB_COMP"
 else
   source ${Plugins[AUTO_COMP]}
+  Plugins[ZF_COMP_ON]="AUTO_COMP"
 fi
