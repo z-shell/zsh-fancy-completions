@@ -1,0 +1,9 @@
+# command prediction from history
+
+autoload -U predict-on
+zle-line-init() { predict-on }
+zle -N zle-line-init
+zle -N predict-on
+zle -N predict-off
+zstyle ':predict' toggle true
+zstyle ':predict' verbose false

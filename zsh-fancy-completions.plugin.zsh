@@ -1,3 +1,4 @@
+#!/usr/bin/env zsh
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 #
@@ -15,16 +16,16 @@ fi
 
 # https://wiki.zshell.dev/community/zsh_plugin_standard#standard-plugins-hash
 typeset -gA Plugins
-Plugins[ZSH_COMPLETIONS]="${0:h}"
+Plugins[ZF_COMP_DIR]="${0:h}"
+Plugins[TAB_COMP]="${0:h}/functions/.tabcompletion"
 
 # https://wiki.zshell.dev/community/zsh_plugin_standard#funtions-directory
 if [[ $PMSPEC != *f* ]]; then
   fpath+=( "${0:h}/functions" )
 fi
 
-autoload -Uz .os-type .completion-{initialization,compatibility,variables,options,zstyle}
-.completion-initialization
-.completion-compatibility
-.completion-variables
-.completion-options
-.completion-zstyle
+if (( ZI[SOURCED] )) then
+  source ${Plugins[TAB_COMP]}
+else
+  source ${Plugins[AUTO_COMP]}
+fi
