@@ -26,9 +26,6 @@ if [[ $PMSPEC != *f* ]]; then
 fi
 
 if (( ZI[SOURCED] )) then
-  source ${Plugins[TAB_COMP]}
-  Plugins[ZF_COMP_ON]="TAB_COMP"
-else
-  source ${Plugins[AUTO_COMP]}
-  Plugins[ZF_COMP_ON]="AUTO_COMP"
+  source ${Plugins[TAB_COMP]} && Plugins[ZF_COMP_ON]="TAB_COMP"
+  source ${Plugins[AUTO_COMP]} && Plugins[ZF_COMP_ON]="AUTO_COMP"
 fi
