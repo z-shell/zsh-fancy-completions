@@ -25,7 +25,8 @@ if [[ $PMSPEC != *f* ]]; then
   fpath+=( "${0:h}/functions" )
 fi
 
-if (( ZI[SOURCED] )) then
-  source ${Plugins[TAB_COMP]} && Plugins[ZF_COMP_ON]="TAB_COMP"
-  source ${Plugins[AUTO_COMP]} && Plugins[ZF_COMP_ON]="AUTO_COMP"
+if [[ "$AUTO_COMP" -eq 1 ]]; then
+  source ${Plugins[AUTO_COMP]}
+else
+  source ${Plugins[TAB_COMP]}
 fi
