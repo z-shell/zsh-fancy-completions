@@ -17,16 +17,20 @@ fi
 # https://wiki.zshell.dev/community/zsh_plugin_standard#standard-plugins-hash
 typeset -gA Plugins
 Plugins[ZF_COMP_DIR]="${0:h}"
-Plugins[TAB_COMP]="${0:h}/functions/.tabcompletion"
-Plugins[AUTO_COMP]="${0:h}/functions/.autocomplete"
+Plugins[ZF_COMP_COMPATIBILITY]="${0:h}/functions/.tabcompletion"
+Plugins[ZF_COMP_TAB_COMP]="${0:h}/functions/.tabcompletion"
+Plugins[ZF_COMP_AUTO_COMP]="${0:h}/functions/.autocomplete"
 
 # https://wiki.zshell.dev/community/zsh_plugin_standard#funtions-directory
 if [[ $PMSPEC != *f* ]]; then
   fpath+=( "${0:h}/functions" )
 fi
 
-if [[ "$AUTO_COMP" -eq 1 ]]; then
-  source ${Plugins[AUTO_COMP]}
-else
-  source ${Plugins[TAB_COMP]}
+if (( AUTO_COMP == 0 )); then 
+  source ${Plugins[ZF_COMP_AUTO_COMP]}
+fi
+
+if (( TAB_COMP == 0 )); then
+  source ${Plugins[ZF_COMP_COMPATIBILITY]}
+  source ${Plugins[ZF_COMP_TAB_COMP]}
 fi
