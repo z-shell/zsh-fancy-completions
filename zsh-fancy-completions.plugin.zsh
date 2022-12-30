@@ -17,7 +17,7 @@ fi
 # https://wiki.zshell.dev/community/zsh_plugin_standard#standard-plugins-hash
 typeset -gA Plugins
 Plugins[ZF_COMP_DIR]="${0:h}"
-Plugins[ZF_COMP_COMPATIBILITY]="${0:h}/functions/.tabcompletion"
+Plugins[ZF_COMP_COMPATIBILITY]="${0:h}/functions/.compatibility"
 Plugins[ZF_COMP_TAB_COMP]="${0:h}/functions/.tabcompletion"
 Plugins[ZF_COMP_AUTO_COMP]="${0:h}/functions/.autocomplete"
 
