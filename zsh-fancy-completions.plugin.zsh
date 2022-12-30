@@ -1,9 +1,5 @@
-#!/usr/bin/env zsh
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
-#
-# Copyright (c) 2022 Salvydas Lukosius
-#
 # Return if requirements are missing
 if [[ $TERM == 'dumb' ]]; then
   return 1
@@ -26,11 +22,9 @@ if [[ $PMSPEC != *f* ]]; then
   fpath+=( "${0:h}/functions" )
 fi
 
-if (( AUTO_COMP == 0 )); then 
+if [[ $ZF_AUTO_COMP == true ]]; then 
   source ${Plugins[ZF_COMP_AUTO_COMP]}
-fi
-
-if (( TAB_COMP == 0 )); then
+else
   source ${Plugins[ZF_COMP_COMPATIBILITY]}
   source ${Plugins[ZF_COMP_TAB_COMP]}
 fi
