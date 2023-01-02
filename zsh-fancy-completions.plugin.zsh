@@ -12,19 +12,13 @@ fi
 
 # https://wiki.zshell.dev/community/zsh_plugin_standard#standard-plugins-hash
 typeset -gA Plugins
-Plugins[ZF_COMP_DIR]="${0:h}"
-Plugins[ZF_COMP_COMPATIBILITY]="${0:h}/functions/.compatibility"
-Plugins[ZF_COMP_TAB_COMP]="${0:h}/functions/.tabcompletion"
-Plugins[ZF_COMP_AUTO_COMP]="${0:h}/functions/.autocomplete"
+Plugins[ZF_COMPLETIONS]="${0:h}"
 
 # https://wiki.zshell.dev/community/zsh_plugin_standard#funtions-directory
 if [[ $PMSPEC != *f* ]]; then
   fpath+=( "${0:h}/functions" )
 fi
 
-if [[ $ZF_AUTO_COMP == true ]]; then 
-  source ${Plugins[ZF_COMP_AUTO_COMP]}
-else
-  source ${Plugins[ZF_COMP_COMPATIBILITY]}
-  source ${Plugins[ZF_COMP_TAB_COMP]}
-fi
+autoload -Uz .completion-tab
+
+zmodload -i zsh/complist && .completion-tab

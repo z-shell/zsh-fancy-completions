@@ -1,11 +1,40 @@
-#!/usr/bin/zsh
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 #
-# Copyright (c) 2022 Salvydas Lukosius
+# Description: Compatibility functions
 
-# Load os types
-(( $+functions[.os-type] )) && .os-type
+case "$OSTYPE" in
+  android*)
+    typeset OS='android'
+    ;;
+  darwin*)
+    typeset OS='darwin'
+    ;;
+  linux*)
+    typeset OS='linux'
+    ;;
+  freebsd*)
+    typeset OS='freebsd'
+    ;;
+  netbsd*)
+    typeset OS='netbsd'
+    ;;
+  openbsd*)
+    typeset OS='openbsd'
+    ;;
+  sunos*)
+    typeset OS='solaris'
+    ;;
+  msys* | cygwin* | mingw*)
+    typeset OS='windows'
+    ;;
+  nt | win*)
+    typeset OS='windows'
+    ;;
+  *)
+    typeset OS='unknown'
+    ;;
+esac
 
 if [[ $OS == 'darwin' ]]; then
   # Add completion for keg-only brewed curl on macOS when available.

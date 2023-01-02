@@ -1,0 +1,31 @@
+{
+  "shellformat.useEditorConfig": true,
+  "files.associations": {
+    "*za-*": "shellscript",
+    ".completion-*": "shellscript",
+    "*zsh-theme": "shellscript",
+    "zshenv": "shellscript",
+    "zlogout": "shellscript",
+    "zlogin": "shellscript",
+    "zprofile": "shellscript",
+    "zshrc": "shellscript"
+  },
+  "shellcheck.ignorePatterns": {
+    "**/*.xonshrc": true,
+    "**/*.xsh": true,
+    "**/*.zsh": true,
+    "**/*.zshrc": true,
+    "**/zshrc": true,
+    "**/*.zprofile": true,
+    "**/zprofile": true,
+    "**/*.zlogin": true,
+    "**/zlogin": true,
+    "**/*.zlogout": true,
+    "**/zlogout": true,
+    "**/*.zshenv": true,
+    "**/zshenv": true,
+    "**/*.zsh-theme": true,
+    "**/*za-*": true,
+    "**/.completion-*": true
+  }
+}

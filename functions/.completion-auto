@@ -1,4 +1,7 @@
-#!/usr/bin/env zsh
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
+#
+# Description: Autocomplete functions
 
 # Load and initialize the completion system ignoring insecure directories.
 zmodload zsh/complist
@@ -7,7 +10,7 @@ autoload -U colors ; colors
 
 zle -C complete-menu menu-select _generic
 _complete_menu() {
-  setopt localoptions alwayslastprompt
+  setopt local_options always_last_prompt
   zle complete-menu
 }
 zle -N _complete_menu
@@ -50,12 +53,13 @@ zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
 
 # Enable rehash on completion so new installed program are found automatically:
-zstyle ':completion:::::'		completer _complete _approximate
+zstyle ':completion:::::'	completer _complete _approximate
 _force_rehash() {
   (( CURRENT == 1 )) && rehash
-  return 1	# Because we didn't really complete anything
+  # Because we didn't really complete anything
+  return 1
 }
-zstyle ':completion:::::'		completer _force_rehash _complete _approximate
+zstyle ':completion:::::'	completer _force_rehash _complete _approximate
 
 # Enable verbose completions (similar to fish shell)
 zstyle ':completion:*'			extra-verbose true
@@ -85,9 +89,8 @@ zstyle ':completion:*:matches'		group 'yes'
 # Enable processes completion for all user processes
 zstyle ':completion:*:processes'	command 'ps -au$USER'
 
-# Enable more processes in completion of programs like killall:
-zstyle ':completion:*:processes-names'	command 'ps c -u ${USER} -o command | uniq'
-# zstyle ':completion:*:(killall|pkill|kill):*'	menu yes select
+# Enable more processes in completion of programs like killall, pkill, kill
+zstyle ':completion:*:processes-names' command 'ps c -u ${USER} -o command | uniq'
 zstyle ':completion:*:(killall|pkill|kill):*'	force-list always
 
 # Enable offering indexes before parameters in subscripts
@@ -99,19 +102,17 @@ zstyle ':completion:*:-tilde-:*'	group-order 'named-directories' 'path-directori
 # Enable . and .. as a completion
 zstyle -e ':completion:*'		special-dirs '[[ $PREFIX = (../)#(|.|..) ]] && reply=(..)'
 
-# Enable only .. as a completion
-#zstyle ':completion:*' special-dirs ..
-
 # Enable environmental variable completion
 zstyle ':completion::*:(-command-|export):*' fake-parameters ${${${_comps[(I)-value-*]#*,}%%,*}:#-*-}
 
 # Enable process lists completion, like the local web server details and host completion
-zstyle ':completion:*:urls' 		local 'www' '/var/www/' 'public_html'
+zstyle ':completion:*:urls' local 'www' '/var/www/' 'public_html'
 
 # Enable hostname completion (use /etc/hosts and known_hosts for hostname completion)
 [ -r /etc/ssh/ssh_known_hosts ] && _global_ssh_hosts=(${${${${(f)"$(</etc/ssh/ssh_known_hosts)"}:#[\|]*}%%\ *}%%,*}) || _global_ssh_hosts=()
 [ -r ~/.ssh/known_hosts ] && _ssh_hosts=(${${${${(f)"$(<$HOME/.ssh/known_hosts)"}:#[\|]*}%%\ *}%%,*}) || _ssh_hosts=()
 [ -r /etc/hosts ] && : ${(A)_etc_hosts:=${(s: :)${(ps:\t:)${${(f)~~"$(</etc/hosts)"}%%\#*}##[:blank:]#[^[:blank:]]#}}} || _etc_hosts=()
+
 hosts=(
   "$_global_ssh_hosts[@]"
   "$_ssh_hosts[@]"
@@ -119,7 +120,7 @@ hosts=(
   "$HOST"
   localhost
 )
-zstyle ':completion:*:hosts' 		hosts $hosts
+zstyle ':completion:*:hosts' hosts $hosts
 
 # Enable $ scp file username@<TAB><TAB>:/<TAB>
 zstyle ':completion:*:(ssh|scp|ftp):*' hosts $hosts
@@ -218,7 +219,7 @@ zstyle ':completion:*'			group-name ''
 # Adjust warnings style
 zstyle ':completion:*:warnings'		format $'%{\e[0;31m%}No matches for:%{\e[0m%} %d'
 
-# Complete manpages - display seperate sections complete manual by their section
+# Complete manpage - display separate sections complete manual by their section
 zstyle ':completion:*:manuals'		separate-sections true
 zstyle ':completion:*:manuals.*'	insert-sections   true
 zstyle ':completion:*:man:*'		menu yes select
@@ -241,7 +242,7 @@ zstyle ':completion:*:(ssh|scp|rsync):*:hosts-host' ignored-patterns '*(.|:)*' l
 zstyle ':completion:*:(ssh|scp|rsync):*:hosts-domain' ignored-patterns '<->.<->.<->.<->' '^[-[:alnum:]]##(.[-[:alnum:]]##)##' '*@*'
 zstyle ':completion:*:(ssh|scp|rsync):*:hosts-ipaddr' ignored-patterns '^(<->.<->.<->.<->|(|::)([[:xdigit:].]##:(#c,2))##(|%*))' '127.0.0.<->' '255.255.255.255' '::1' 'fe80::*'
 
-# manpage comletion
+# manpage completion
 man_glob () {
   local a
   read -cA a
@@ -261,7 +262,7 @@ compctl -k hosts -P '@' finger
 # some people don't like the automatic correction - so run 'NOCOR=1 zsh' to deactivate it
 if [[ "$NOCOR" -gt 0 ]] ; then
     zstyle ':completion:*' completer _oldlist _expand _force_rehash _complete _files _ignored
-    setopt nocorrect
+    setopt no_correct
 else
     # try to be smart about when to use what completer...
     setopt correct
