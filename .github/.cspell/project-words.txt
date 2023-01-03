@@ -20,8 +20,10 @@ NOCOR
 noticable
 pkill
 PMSPEC
+sched
 setopt
 tabcompletion
+unfunction
 unsetopt
 xdigit
 zcompdump

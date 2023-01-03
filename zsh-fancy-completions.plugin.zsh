@@ -19,4 +19,6 @@ if [[ $PMSPEC != *f* ]]; then
   fpath+=( "${0:h}/functions" )
 fi
 
-source ${0:h}/functions/.completion-tab
+source ${0:h}/lib/options.zsh
+source ${0:h}/lib/completion.zsh
+source ${0:h}/lib/tab-completion.zsh

@@ -1,43 +1,14 @@
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 #
-# Description: Tab completion
-
-# Options
-
-setopt COMPLETE_IN_WORD    # Complete from both ends of a word.
-setopt ALWAYS_TO_END       # Move cursor to the end of a completed word.
-setopt PATH_DIRS           # Perform path search even on command names with slashes.
-setopt AUTO_MENU           # Show completion menu on a successive tab press.
-setopt AUTO_LIST           # Automatically list choices on ambiguous completion.
-setopt AUTO_PARAM_SLASH    # If completed parameter is a directory, add a trailing slash.
-setopt EXTENDED_GLOB        # Needed for file modification glob modifiers with compinit.
-unsetopt MENU_COMPLETE     # Do not autoselect the first completion entry.
-unsetopt FLOW_CONTROL      # Disable start/stop characters in shell editor.
-
-# Zstyle options
-
-# Defaults.
-zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*:default' list-prompt '%S%M matches%s'
-
-# Case-insensitive (all), partial-word, and then substring completion.
-if [[ "$CASE_SENSITIVE" = true ]]; then
-  zstyle ':completion:*' matcher-list 'r:|=*' 'l:|=* r:|=*'
-else
-  if [[ "$HYPHEN_INSENSITIVE" = true ]]; then
-    zstyle ':completion:*' matcher-list 'm:{a-zA-Z-_}={A-Za-z_-}' 'r:|=*' 'l:|=* r:|=*'
-  else
-    zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
-  fi
-fi
-unset CASE_SENSITIVE HYPHEN_INSENSITIVE
+# Description: Completion
 
 # Enable cache - Some functions, like _apt and _dpkg, are very slow.
 # You can use a cache in order to proxy the list of results (like the list of available debian packages)
-zstyle ':completion::complete:*' accept-exact '*(N)'
-zstyle ':completion::complete:*' use-cache on
-zstyle ':completion::complete:*' cache-path "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
+zstyle ':completion:*' cache-path "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
+zstyle ':completion:*' accept-exact '*(N)'
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' rehash true
 
 # Group matches and describe.
 zstyle ':completion:*:*:*:*:*' menu select
@@ -125,7 +96,8 @@ zstyle ':completion:*:(ssh|scp|rsync):*:hosts-ipaddr' ignored-patterns '^(<->.<-
 # Disable named-directories autocompletion
 zstyle ':completion:*:cd:*' tag-order local-directories directory-stack path-directories
 
-# Don't complete uninteresting users
+# Don't complete not-required/available users/commands
+zstyle ':completion:*:functions' ignored-patterns '(_*|pre(cmd|exec)|TRAP*)'
 zstyle ':completion:*:*:*:users' ignored-patterns \
         adm amanda apache at avahi avahi-autoipd beaglidx bin cacti canna \
         clamav daemon dbus distcache dnsmasq dovecot fax ftp games gdm \
@@ -140,22 +112,6 @@ zstyle '*' single-ignored show
 # Ignore multiple entries.
 zstyle ':completion:*:(rm|kill|diff):*' ignore-line other
 zstyle ':completion:*:rm:*' file-patterns '*:all-files'
-
-# Don't complete unavailable commands.
-zstyle ':completion:*:functions' ignored-patterns '(_*|pre(cmd|exec))'
-
-if [[ ${COMPLETION_WAITING_DOTS:-false} != false ]]; then
-  expand-or-complete-with-dots() {
-    [[ $COMPLETION_WAITING_DOTS = true ]] && COMPLETION_WAITING_DOTS="%F{red}…%f"
-    printf '\e[?7l%s\e[?7h' "${(%)COMPLETION_WAITING_DOTS}"
-    zle expand-or-complete
-    zle redisplay
-  }
-  zle -N expand-or-complete-with-dots
-  bindkey -M emacs "^I" expand-or-complete-with-dots
-  bindkey -M viins "^I" expand-or-complete-with-dots
-  bindkey -M vicmd "^I" expand-or-complete-with-dots
-fi
 
 # Automatically load bash completion functions
 autoload -U +X bashcompinit && bashcompinit
