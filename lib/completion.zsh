@@ -1,7 +1,8 @@
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
-#
-# Description: Completion
+
+
+# ‑‑‑‑‑‑‑‑‑ ⸨ COMPLETION ⸩ ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑
 
 # Enable cache - Some functions, like _apt and _dpkg, are very slow.
 # You can use a cache in order to proxy the list of results (like the list of available debian packages)
@@ -92,6 +93,11 @@ zstyle ':completion:*:ssh:*' group-order users hosts-domain hosts-host users hos
 zstyle ':completion:*:(ssh|scp|rsync):*:hosts-host' ignored-patterns '*(.|:)*' loopback ip6-loopback localhost ip6-localhost broadcasthost
 zstyle ':completion:*:(ssh|scp|rsync):*:hosts-domain' ignored-patterns '<->.<->.<->.<->' '^[-[:alnum:]]##(.[-[:alnum:]]##)##' '*@*'
 zstyle ':completion:*:(ssh|scp|rsync):*:hosts-ipaddr' ignored-patterns '^(<->.<->.<->.<->|(|::)([[:xdigit:].]##:(#c,2))##(|%*))' '127.0.0.<->' '255.255.255.255' '::1' 'fe80::*'
+
+# ‑‑‑‑‑‑‑‑‑ ⸨ DISABLE / IGNORE ⸩ ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑
+
+# Disable sort when completing `git checkout`
+zstyle ':completion:*:git-checkout:*' sort false
 
 # Disable named-directories autocompletion
 zstyle ':completion:*:cd:*' tag-order local-directories directory-stack path-directories
