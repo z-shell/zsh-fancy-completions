@@ -9,21 +9,36 @@
 zstyle ':completion:*' cache-path "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
 zstyle ':completion:*' accept-exact '*(N)'
 zstyle ':completion:*' use-cache on
+zstyle ':completion:*' file-sort name
+
+# How many completions switch on menu selection
+zstyle ':completion:*' menu select=long
+
+# If there are more than 5 options, allow selecting from a menu with arrows (case insensitive completion!).
+zstyle ':completion:*-case' menu select=5
+
+# Enable rehash on completion so new installed program are found automatically:
 zstyle ':completion:*' rehash true
+zstyle ':completion:::::' completer _complete _approximate
+autoload -Uz _force_rehash
+zstyle ':completion:::::'	completer _force_rehash _complete _approximate
 
 # Group matches and describe.
 zstyle ':completion:*:*:*:*:*' menu select
 zstyle ':completion:*:matches' group 'yes'
 zstyle ':completion:*:options' description 'yes'
 zstyle ':completion:*:options' auto-description '%d'
-zstyle ':completion:*:corrections' format ' %F{green}-- %d (errors: %e) --%f'
-zstyle ':completion:*:descriptions' format ' %F{yellow}-- %d --%f'
-zstyle ':completion:*:messages' format ' %F{purple} -- %d --%f'
-zstyle ':completion:*:warnings' format ' %F{red}-- no matches found --%f'
+zstyle ':completion:*:corrections' format ' %F{green}»» %d (errors: %e) ««%f'
+zstyle ':completion:*:descriptions' format ' %F{cyan}»» %d ««%f'
+zstyle ':completion:*:messages' format ' %F{purple} »» %d ««%f'
+zstyle ':completion:*:warnings' format ' %F{red}»» no matches found ««%f'
 zstyle ':completion:*:default' list-prompt '%S%M matches%s'
-zstyle ':completion:*' format ' %F{yellow}-- %d --%f'
+zstyle ':completion:*' format ' %F{yellow}»» %d ««%f'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*' verbose yes
+
+# Enable history menu selection
+zstyle ':completion:*:history-words'	menu yes
 
 # Fuzzy match mistyped completions.
 zstyle ':completion:*' completer _complete _match _approximate
