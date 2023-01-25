@@ -1,0 +1,6 @@
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
+
+printf '\e[?7l%s\e[?7h' "${(%)COMPLETION_WAITING_DOTS}"
+zle expand-or-complete
+zle redisplay
