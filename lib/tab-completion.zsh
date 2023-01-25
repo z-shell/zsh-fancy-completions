@@ -5,7 +5,7 @@
 
 # Menu completion
 autoload -Uz _complete_menu
-zle -C complete-menu menu-select _generic
+zle -C _complete-menu menu-select _generic
 zle -N _complete_menu
 
 # Use ls-colors for path completions
