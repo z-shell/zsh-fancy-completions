@@ -1,0 +1,10 @@
+# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
+# vim: ft=zsh sw=2 ts=2 et
+
+local a
+read -cA a
+if [[ $a[2] = -s ]] then
+  reply=( ${^manpath}/man$a[3]/$1*$2(N:t:r) )
+else
+ reply=( ${^manpath}/man*/$1*$2(N:t:r) )
+fi
