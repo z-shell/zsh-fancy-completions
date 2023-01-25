@@ -12,6 +12,14 @@ zle -N _complete_menu
 autoload -Uz _set-list-colors
 sched 0 _set-list-colors
 
+# Manpage comletion
+autoload -Uz _man_glob
+compctl -K _man_glob -x 'C[-1,-P]' -m - 'R[-*l*,;]' -g '*.(man|[0-9nlpo](|[a-z]))' + -g '*(-/)' -- man
+
+# Tools - host completion for a few commands
+compctl -k hosts ftp lftp ncftp ssh w3m lynx links elinks nc telnet rlogin host
+compctl -k hosts -P '@' finger
+
 # Case-insensitive (all), partial-word, and then substring completion.
 if [[ "$CASE_SENSITIVE" = true ]]; then
   zstyle ':completion:*' matcher-list 'r:|=*' 'l:|=* r:|=*'
