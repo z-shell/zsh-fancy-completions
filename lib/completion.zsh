@@ -59,6 +59,19 @@ zstyle ':completion:*:matches'		group 'yes'
 # Enable processes completion for all user processes
 zstyle ':completion:*:processes'	command 'ps -au$USER'
 
+# Adjust case-insensitive completions for: (all),partial-word and then substring matches
+zstyle ':completion:*' 	matcher-list 'm:ss=ß m:ue=ü m:ue=Ü m:oe=ö m:oe=Ö m:ae=ä m:ae=Ä m:{a-zA-Zöäüa-zÖÄÜ}={A-Za-zÖÄÜA-Zöäü}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+
+# Adjust mismatch handling - allow one error for every three characters typed in approximate completer
+zstyle ':completion:*:approximate:*'    max-errors 1 numeric
+zstyle -e ':completion:*:approximate:*' max-errors 'reply=( $((($#PREFIX+$#SUFFIX)/3 )) numeric )'
+
+# Adjust match count style
+zstyle ':completion:*:default'		list-prompt '%S%M matches%s'
+
+# Adjust selection prompt style
+zstyle ':completion:*'  select-prompt %SScrolling active: current selection at %P Lines: %m
+
 # Fuzzy match mistyped completions.
 zstyle ':completion:*' completer _complete _match _approximate
 zstyle ':completion:*:match:*' original only
@@ -67,6 +80,9 @@ zstyle ':completion:*:approximate:*' max-errors 1 numeric
 # Increase the number of errors based on the length of the typed word.
 # Ensure to cap (at 7) the max-errors to avoid hanging.
 zstyle -e ':completion:*:approximate:*' max-errors 'reply=($((($#PREFIX+$#SUFFIX)/3>7?7:($#PREFIX+$#SUFFIX)/3))numeric)'
+
+# Adjust completion to offer fish-style highlighting for extra-verbose command completion:
+zstyle -e ':completion:*:-command-:*:commands'	list-colors 'reply=( '\''=(#b)('\''$words[CURRENT]'\''|)*-- #(*)=0=38;5;45=38;5;136'\'' '\''=(#b)('\''$words[CURRENT]'\''|)*=0=38;5;45'\'' )'
 
 # Array completion element sorting.
 zstyle ':completion:*:*:-subscript-:*' tag-order indexes parameters
@@ -103,9 +119,10 @@ zstyle ':completion:*:*:(killall|pkill|kill):*' menu yes select
 zstyle ':completion:*:*:(killall|pkill|kill):*' force-list always
 zstyle ':completion:*:*:(killall|pkill|kill):*' insert-ids single
 
-# Man
-zstyle ':completion:*:manuals' separate-sections true
-zstyle ':completion:*:manuals.(^1*)' insert-sections true
+# Complete manual by their section
+zstyle ':completion:*:manuals'  separate-sections true
+zstyle ':completion:*:manuals.*'  insert-sections   true
+zstyle ':completion:*:man:*'  menu yes select
 
 # Media Players
 zstyle ':completion:*:*:mpg123:*' file-patterns '*.(mp3|MP3):mp3\ files *(-/):directories'
