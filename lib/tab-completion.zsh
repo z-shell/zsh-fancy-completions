@@ -3,11 +3,13 @@
 #
 # Description: Tab completion
 
+# Menu completion
+autoload -Uz _complete_menu
+zle -C complete-menu menu-select _generic
+zle -N _complete_menu
+
 # Use ls-colors for path completions
-function _set-list-colors() {
-	zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-	unfunction _set-list-colors
-}
+autoload -Uz _set-list-colors
 sched 0 _set-list-colors
 
 # Case-insensitive (all), partial-word, and then substring completion.
@@ -23,14 +25,9 @@ fi
 unset CASE_SENSITIVE HYPHEN_INSENSITIVE
 
 if [[ ${COMPLETION_WAITING_DOTS:-false} != false ]]; then
-  expand-or-complete-with-dots() {
-    [[ $COMPLETION_WAITING_DOTS = true ]] && COMPLETION_WAITING_DOTS="%F{red}…%f"
-    printf '\e[?7l%s\e[?7h' "${(%)COMPLETION_WAITING_DOTS}"
-    zle expand-or-complete
-    zle redisplay
-  }
-  zle -N expand-or-complete-with-dots
-  bindkey -M emacs "^I" expand-or-complete-with-dots
-  bindkey -M viins "^I" expand-or-complete-with-dots
-  bindkey -M vicmd "^I" expand-or-complete-with-dots
+  autoload -Uz .expand-or-complete-with-dots
+  zle -N .expand-or-complete-with-dots
+  bindkey -M emacs "^I" .expand-or-complete-with-dots
+  bindkey -M viins "^I" .expand-or-complete-with-dots
+  bindkey -M vicmd "^I" .expand-or-complete-with-dots
 fi
