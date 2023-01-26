@@ -7,10 +7,6 @@
 autoload -Uz _complete_menu
 zle -N _complete_menu
 
-# Use ls-colors for path completions
-autoload -Uz _set-list-colors
-sched 0 _set-list-colors
-
 # Manpage comletion
 autoload -Uz _man_glob
 compctl -K _man_glob -x 'C[-1,-P]' -m - 'R[-*l*,;]' -g '*.(man|[0-9nlpo](|[a-z]))' + -g '*(-/)' -- man
