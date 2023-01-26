@@ -4,4 +4,3 @@
 # Description: use ls-colors for path completions
 
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-unfunction _set-list-colors
