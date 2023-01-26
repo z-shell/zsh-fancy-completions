@@ -1,5 +1,5 @@
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 
-setopt local_options always_last_prompt
+builtin setopt local_options always_last_prompt
 zle complete-menu
