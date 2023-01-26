@@ -4,9 +4,8 @@
 # Description: Tab completion
 
 # Menu completion
-#zle -C complete-menu menu-select _generic
-#autoload -Uz _complete_menu
-#zle -N _complete_menu
+autoload -Uz _complete_menu
+zle -N _complete_menu
 
 # Use ls-colors for path completions
 autoload -Uz _set-list-colors
