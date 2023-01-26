@@ -59,6 +59,10 @@ zstyle ':completion:*:matches'		group 'yes'
 # Enable processes completion for all user processes
 zstyle ':completion:*:processes'	command 'ps -au$USER'
 
+# Adjust color-completion style
+zstyle ':completion:*:default'  list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*'  list-colors  'reply=( "=(#b)(*$PREFIX)(?)*=00=$color[green]=$color[bg-green]" )'
+
 # Adjust case-insensitive completions for: (all),partial-word and then substring matches
 zstyle ':completion:*' 	matcher-list 'm:ss=ß m:ue=ü m:ue=Ü m:oe=ö m:oe=Ö m:ae=ä m:ae=Ä m:{a-zA-Zöäüa-zÖÄÜ}={A-Za-zÖÄÜA-Zöäü}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
 
