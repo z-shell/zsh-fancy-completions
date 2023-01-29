@@ -27,9 +27,9 @@ zstyle ':completion:*-case' menu select=5
 
 # Enable rehash on completion so new installed program are found automatically:
 zstyle ':completion:*' rehash true
-zstyle ':completion:::::' completer _complete _approximate
-autoload -Uz _force_rehash
-zstyle ':completion:::::'	completer _force_rehash _complete _approximate
+#zstyle ':completion:::::' completer _complete _approximate
+#autoload -Uz _force_rehash
+#zstyle ':completion:::::'	completer _force_rehash _complete _approximate
 
 # Group matches and describe.
 zstyle ':completion:*:*:*:*:*' menu select
