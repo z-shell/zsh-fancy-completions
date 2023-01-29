@@ -3,6 +3,12 @@
 
 # ‑‑‑‑‑‑‑‑‑ ⸨ COMPLETION ⸩ ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑
 
+# If using with Zi do not load/call compinit
+(( ZI[SOURCED] )) || {
+  autoload -U compinit && compinit
+  zmodload -i zsh/complist
+}
+
 # Automatically load bash completion functions
 autoload -U +X bashcompinit && bashcompinit
 
