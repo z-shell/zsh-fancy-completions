@@ -48,10 +48,6 @@ zstyle ':completion:*' verbose yes
 # Enable history menu selection
 zstyle ':completion:*:history-words'	menu yes
 
-# Enable completion of 'cd -<tab>' and 'cd -<ctrl-d>' with menu
-zstyle ':completion:*:*:cd:*' tag-order local-directories directory-stack path-directories
-zstyle ':completion:*:*:cd:*:directory-stack' menu yes select
-
 # Enable expand completer for all expansions
 zstyle ':completion:*:expand:*'		tag-order all-expansions
 zstyle ':completion:*:history-words'	list false
@@ -98,6 +94,7 @@ zstyle -e ':completion:*:-command-:*:commands'	list-colors 'reply=( '\''=(#b)('\
 zstyle ':completion:*:*:-subscript-:*' tag-order indexes parameters
 
 # Directories
+# Enable completion of 'cd -<tab>' and 'cd -<ctrl-d>' with menu
 zstyle ':completion:*:*:cd:*' tag-order local-directories directory-stack path-directories
 zstyle ':completion:*:*:cd:*:directory-stack' menu yes select
 zstyle ':completion:*:-tilde-:*' group-order 'named-directories' 'path-directories' 'users' 'expand'
