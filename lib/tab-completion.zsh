@@ -3,6 +3,9 @@
 #
 # Description: Tab completion
 
+# Make sure the completion system is initialised
+(( ${+_comps} )) || return 1
+
 # Menu completion
 autoload -Uz _complete_menu
 zle -N _complete_menu
