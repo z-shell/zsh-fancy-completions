@@ -12,6 +12,9 @@
 # Automatically load bash completion functions
 autoload -U +X bashcompinit && bashcompinit
 
+# Make sure the completion system is initialised
+(( ${+_comps} )) || return 1
+
 # Enable cache - Some functions, like _apt and _dpkg, are very slow.
 # You can use a cache in order to proxy the list of results (like the list of available debian packages)
 zstyle ':completion:*' cache-path "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
