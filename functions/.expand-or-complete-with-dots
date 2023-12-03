@@ -1,10 +1,10 @@
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 
-autoload -U colors ; colors
+if [[ -n "$COMPLETION_WAITING_DOTS" ]]; then
+  autoload -U colors ; colors
+  COMPLETION_WAITING_DOTS="%F{red}…%f"
 
-[[ $COMPLETION_WAITING_DOTS = true ]] && COMPLETION_WAITING_DOTS="%F{red}…%f"
-
-printf '\e[?7l%s\e[?7h' "${(%)COMPLETION_WAITING_DOTS}"
-zle expand-or-complete
-zle redisplay
+  printf '\e[?7l%s\e[?7h' "${(%)COMPLETION_WAITING_DOTS}"
+  zle expand-or-complete ; zle redisplay
+fi
