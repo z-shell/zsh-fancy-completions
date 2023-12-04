@@ -30,7 +30,7 @@ else
 fi
 unset CASE_SENSITIVE HYPHEN_INSENSITIVE
 
-if [[ ${COMPLETION_WAITING_DOTS:-false} != false ]]; then
+if [[ -n "$COMPLETION_WAITING_DOTS" ]]; then
   autoload -Uz .expand-or-complete-with-dots
   zle -N .expand-or-complete-with-dots
   bindkey -M emacs "^I" .expand-or-complete-with-dots
