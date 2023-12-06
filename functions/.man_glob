@@ -3,8 +3,9 @@
 
 local a
 read -cA a
+
 if [[ $a[2] = -s ]] then
   reply=( ${^manpath}/man$a[3]/$1*$2(N:t:r) )
 else
- reply=( ${^manpath}/man*/$1*$2(N:t:r) )
+  reply=( ${^manpath}/man*/$1*$2(N:t:r) )
 fi
