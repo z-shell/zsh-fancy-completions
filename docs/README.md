@@ -12,6 +12,13 @@
 
 ## 💡 [**Zi**](https://github.com/z-shell/zi) Wiki: [completion management](https://wiki.zshell.dev/docs/getting_started/overview#the-completion-management)
 
+### Completion settings
+
+| Variable                           | Description                          | Default      |
+| ---------------------------------- | ------------------------------------ | ------------ |
+| <kbd>COMPLETION_WAITING_DOTS</kbd> | Show `…` while waiting completion    | <kbd>0</kbd> |
+| <kbd>MANPAGE_COMPLETION</kbd>      | Check and complete available manpage | <kbd>0</kbd> |
+
 ### Install `zsh-fancy-completions`
 
 #### [Standard syntax](https://wiki.zshell.dev/docs/guides/syntax/common#standard-syntax)
