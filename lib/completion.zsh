@@ -22,6 +22,10 @@ zstyle ':completion:*' completer _expand _complete _ignored _correct _approximat
 
 # Enable cache - Some functions, like _apt and _dpkg, are very slow.
 # You can use a cache in order to proxy the list of results (like the list of available debian packages)
+if [[ ! -d "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}" ]]; then
+  mkdir -p "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
+fi
+
 zstyle ':completion:*' cache-path "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
 zstyle ':completion:*' accept-exact '*(N)'
 zstyle ':completion:*' use-cache on
@@ -42,7 +46,6 @@ zstyle ':completion:*-case' menu select=5
 
 # Group matches and describe.
 zstyle ':completion:*:*:*:*:*' menu select
-zstyle ':completion:*:matches' group 'yes'
 zstyle ':completion:*:options' description 'yes'
 zstyle ':completion:*:options' auto-description '%d'
 zstyle ':completion:*:corrections' format ' %F{green}»» %d (errors: %e) ««%f'
@@ -59,13 +62,12 @@ zstyle ':completion:*:history-words'	menu yes
 
 # Enable expand completer for all expansions
 zstyle ':completion:*:expand:*'		tag-order all-expansions
-zstyle ':completion:*:history-words'	list false
 
 # Enable offering indexes before parameters in subscripts
 zstyle ':completion:*:*:-subscript-:*'	tag-order indexes parameters
 
 # Enable matches to separate into groups
-zstyle ':completion:*:matches'  group 'yes'
+zstyle ':completion:*:matches' group 'yes'
 
 # Enable processes completion for all user processes
 zstyle ':completion:*:processes'  command 'ps -au$USER'
@@ -82,7 +84,7 @@ zstyle ':completion:*:approximate:*'    max-errors 1 numeric
 zstyle -e ':completion:*:approximate:*' max-errors 'reply=( $((($#PREFIX+$#SUFFIX)/3 )) numeric )'
 
 # Adjust match count style
-zstyle ':completion:*:default'		list-prompt '%S%M matches%s'
+zstyle ':completion:*:default'  list-prompt '%S%M matches%s'
 
 # Adjust selection prompt style
 zstyle ':completion:*'  select-prompt %SScrolling active: current selection at %P Lines: %m
@@ -166,9 +168,9 @@ if (( CASE_SENSITIVE )); then
   zstyle ':completion:*' matcher-list 'r:|=*' 'l:|=* r:|=*'
 else
   if (( HYPHEN_INSENSITIVE )); then
-    zstyle ':completion:*' matcher-list 'm:{a-zA-Z-_}={A-Za-z_-}' 'r:|=*' 'l:|=* r:|=*'
+    zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]-_}={[:upper:][:lower:]_-}' 'r:|=*' 'l:|=* r:|=*'
   else
-    zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+    zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|=*' 'l:|=* r:|=*'
   fi
 fi
 
@@ -205,13 +207,9 @@ zstyle ':completion:*:cd:*'		ignored-patterns '(*/)#CVS'
 zstyle ':completion:*:rm:*'		ignore-line yes
 
 # Prevent menu completion for ambiguous initial strings
-zstyle ':completion:*'			insert-unambiguous true
+zstyle ':completion:*'  insert-unambiguous true
 zstyle ':completion:*:corrections'	format $'%{\e[0;31m%}%d (errors: %e)%{\e[0m%}'
 zstyle ':completion:*:correct:*'	original true
-
-# Prevent men completion for duplicate entries
-zstyle ':completion:*:history-words'	remove-all-dups yes
-zstyle ':completion:*:history-words'	stop yes
 
 # Prevent completion of functions for commands you don't have
 zstyle ':completion:*:functions'	ignored-patterns '(_*|pre(cmd|exec))'
@@ -272,6 +270,4 @@ if (( COMPLETION_WAITING_DOTS )); then
   bindkey -M emacs "^I" .expand-or-complete-with-dots
   bindkey -M viins "^I" .expand-or-complete-with-dots
   bindkey -M vicmd "^I" .expand-or-complete-with-dots
-
-
 fi
