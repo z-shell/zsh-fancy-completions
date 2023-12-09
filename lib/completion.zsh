@@ -6,11 +6,11 @@
 # ‑‑‑‑‑‑‑‑‑ ⸨ COMPLETION OPTIONS ⸩ ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑
 
 setopt COMPLETE_IN_WORD       # Complete from both ends of a word.
-setopt ALWAYS_TO_END          # Move cursor to the end of a completed word.
+setopt ALWAYS_TO_END          # Move the cursor to the end of a completed word.
 setopt PATH_DIRS              # Perform path search even on command names with slashes.
-setopt AUTO_MENU              # Show completion menu on a successive tab press.
+setopt AUTO_MENU              # Show the completion menu on a successive tab press.
 setopt AUTO_LIST              # Automatically list choices on ambiguous completion.
-setopt AUTO_PARAM_SLASH       # If completed parameter is a directory, add a trailing slash.
+setopt AUTO_PARAM_SLASH       # If the completed parameter is a directory, add a trailing slash.
 setopt HIST_EXPIRE_DUPS_FIRST # Expire duplicate entries first when trimming history.
 setopt EXTENDED_GLOB          # Needed for file modification glob modifiers with compinit.
 unsetopt MENU_COMPLETE        # Do not autoselect the first completion entry.
@@ -18,10 +18,8 @@ unsetopt FLOW_CONTROL         # Disable start/stop characters in shell editor.
 
 # ‑‑‑‑‑‑‑‑‑ ⸨ COMPLETION CONFIGURATION ⸩ ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑
 
-zstyle ':completion:*' completer _expand _complete _ignored _correct _approximate
-
 # Enable cache - Some functions, like _apt and _dpkg, are very slow.
-# You can use a cache in order to proxy the list of results (like the list of available debian packages)
+# You can use a cache to proxy the list of results (like the list of available Debian packages)
 if [[ ! -d "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}" ]]; then
   mkdir -p "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
 fi
@@ -31,7 +29,7 @@ zstyle ':completion:*' accept-exact '*(N)'
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' file-sort name
 
-# Enable rehash on completion so new installed program are found automatically:
+# Enable rehash on completion so new installed programs are found automatically:
 zstyle ':completion:*' rehash true
 
 # How many completions switch on menu selection
@@ -40,9 +38,8 @@ zstyle ':completion:*' menu select=long
 # If there are more than 5 options, allow selecting from a menu with arrows (case insensitive completion!).
 zstyle ':completion:*-case' menu select=5
 
-#zstyle ':completion:::::' completer _complete _approximate
-#autoload -Uz .force_rehash
-#zstyle ':completion:::::'	completer .force_rehash _complete _approximate
+autoload -Uz .force_rehash
+zstyle ':completion:*'  completer _expand .force_rehash _complete _ignored _correct _approximate _files
 
 # Group matches and describe.
 zstyle ':completion:*:*:*:*:*' menu select
