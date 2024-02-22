@@ -1,8 +1,0 @@
-# -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
-# vim: ft=zsh sw=2 ts=2 et
-
-builtin emulate -L zsh ${=${options[xtrace]:#off}:+-o xtrace}
-builtin setopt extended_glob no_short_loops no_auto_pushd local_options always_last_prompt
-autoload -U colors ; colors
-zle -C complete-menu menu-select _generic
-zle complete-menu

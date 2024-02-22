@@ -7,10 +7,17 @@
   </p>
 </h1>
 <h2 align="center">
-  <p>The plugin provides various completions tools, libraries and integrations.</p>
+  <p>The plugin provides various completions tools, libraries, and integrations.</p>
 </h2>
 
 ## 💡 [**Zi**](https://github.com/z-shell/zi) Wiki: [completion management](https://wiki.zshell.dev/docs/getting_started/overview#the-completion-management)
+
+### Completion settings
+
+| Variable                           | Description                          | Default      |
+| ---------------------------------- | ------------------------------------ | ------------ |
+| <kbd>COMPLETION_WAITING_DOTS</kbd> | Show `…` while waiting completion    | <kbd>0</kbd> |
+| <kbd>MANPAGE_COMPLETION</kbd>      | Check and complete available manpage | <kbd>0</kbd> |
 
 ### Install `zsh-fancy-completions`
 
@@ -43,4 +50,4 @@ The [@zsh-users+fast](https://wiki.zshell.dev/ecosystem/annexes/meta-plugins#@zs
 - [zsh-completions](https://github.com/z-shell/zsh-completions),
 - [z-shell/zsh-fancy-completions](https://github.com/z-shell/zsh-fancy-completions).
 
-Additional example of how to install [many plugins](https://wiki.zshell.dev/ecosystem/annexes/meta-plugins#available-meta-plugins).
+Additional examples of how to install [many plugins](https://wiki.zshell.dev/ecosystem/annexes/meta-plugins#available-meta-plugins).

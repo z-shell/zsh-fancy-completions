@@ -27,12 +27,14 @@ netdump
 nfsnobody
 nlpo
 nscd
+ÖÄÜA
 obsrun
 oldlist
 pcap
 polkitd
 prezto
 privoxy
+pushd
 radvd
 rlogin
 rpcuser
@@ -47,4 +49,7 @@ vcsa
 vicmd
 viins
 wwwrun
+xtrace
 ypcat
+Zöäü
+Zöäüa

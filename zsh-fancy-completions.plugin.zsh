@@ -18,7 +18,6 @@ fi
 if [[ $TERM == 'dumb' ]]; then
   return 0
 else
-  source ${0:h}/lib/options.zsh
+  source ${0:h}/lib/compatibility.zsh
   source ${0:h}/lib/completion.zsh
-  source ${0:h}/lib/tab-completion.zsh
 fi

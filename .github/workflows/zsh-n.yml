@@ -14,6 +14,8 @@ on:
       - "functions/.*"
   workflow_dispatch: {}
 
+permissions: read-all
+
 jobs:
   zsh-matrix:
     runs-on: ubuntu-latest
