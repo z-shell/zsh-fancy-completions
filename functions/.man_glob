@@ -1,8 +1,11 @@
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 
-local a
+typeset -a a
 read -cA a
+
+# Ensure manpath is available
+(( ${+manpath} )) || manpath=(${(s.:.)$(manpath 2>/dev/null)} /usr/share/man /usr/local/share/man)
 
 if [[ $a[2] = -s ]] then
   reply=( ${^manpath}/man$a[3]/$1*$2(N:t:r) )
