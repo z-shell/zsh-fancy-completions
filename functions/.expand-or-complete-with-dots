@@ -6,7 +6,7 @@ setopt typeset_silent local_options
 typeset WAITING_DOTS="%F{red}…%f"
 
 # Only display dots if terminal supports color and proper output
-if [[ -t 1 && -t 2 ]]; then
+if [[ -t 1 ]]; then
   printf '\e[?7l%s\e[?7h' "${(%)WAITING_DOTS}"
 fi
 
