@@ -25,7 +25,22 @@ if [[ ! -d "$cache_dir" ]]; then
   if ! mkdir -p "$cache_dir" 2>/dev/null; then
     # Fallback to a temporary directory if cache creation fails
     cache_dir=$(mktemp -d 2>/dev/null || echo "/tmp/zsh-completion-cache-$$")
-    mkdir -p "$cache_dir" 2>/dev/null
+    cache_dir=$(mktemp -d 2>/dev/null)
+    if [[ -z "$cache_dir" || ! -d "$cache_dir" ]]; then
+      # Securely generate a random fallback name
+      random_suffix="${RANDOM}-$(date +%s%N)"
+      cache_dir="/tmp/zsh-completion-cache-${random_suffix}"
+      if [[ -d "$cache_dir" ]]; then
+        # Check ownership: only use if owned by current user
+        if [[ "$(stat -c %u "$cache_dir" 2>/dev/null)" -ne "$UID" ]]; then
+          echo "Error: fallback cache directory $cache_dir exists and is not owned by current user." >&2
+          cache_dir=""
+        fi
+      fi
+      if [[ -n "$cache_dir" ]]; then
+        mkdir -p "$cache_dir" 2>/dev/null
+      fi
+    fi
   fi
 fi
 
