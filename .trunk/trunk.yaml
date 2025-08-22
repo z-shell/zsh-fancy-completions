@@ -1,10 +1,10 @@
 version: 0.1
 cli:
-  version: 1.17.2
+  version: 1.25.0
 plugins:
   sources:
     - id: trunk
-      ref: v1.3.0
+      ref: v1.7.2
       uri: https://github.com/trunk-io/plugins
 lint:
   disabled:
@@ -13,16 +13,16 @@ lint:
     - yamllint
     - trivy
   enabled:
-    - prettier@3.1.0
-    - actionlint@1.6.26
-    - markdownlint@0.37.0
+    - prettier@3.6.2
+    - actionlint@1.7.7
+    - markdownlint@0.45.0
     - git-diff-check
-    - gitleaks@8.18.1
+    - gitleaks@8.28.0
 runtimes:
   enabled:
     - python@3.10.8
     - go@1.21.0
-    - node@18.12.1
+    - node@22.16.0
 actions:
   enabled:
     - trunk-announce
