@@ -263,7 +263,7 @@ zmodload -i zsh/complist
 # Make sure the completion system is initialized
 # Use the cache directory we set up earlier for the dump file
 typeset zcompdump_path="${cache_dir}/.zcompdump"
-(( ${+_comps} )) || autoload -U compinit && compinit -u -d "$zcompdump_path"
+(( ${+_comps} )) || autoload -U compinit && compinit -d "$zcompdump_path"
 
 # Load colors for completion
 autoload -U colors && colors
