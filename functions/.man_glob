@@ -4,8 +4,18 @@
 typeset -a a
 read -cA a
 
-# Ensure manpath is available
-(( ${+manpath} )) || manpath=(${(s.:.)$(manpath 2>/dev/null)} /usr/share/man /usr/local/share/man)
+# Ensure manpath is available, guarding manpath(1) and filtering empty entries
+if (( ! ${+manpath} )); then
+  local _manpath_raw _manpath_arr
+  _manpath_raw=$(manpath 2>/dev/null || print -r -- '')
+  if [[ -n $_manpath_raw ]]; then
+    _manpath_arr=( ${(s.:.)_manpath_raw} )
+    _manpath_arr=( ${_manpath_arr:#} )  # filter out empty entries
+    manpath=( $_manpath_arr /usr/share/man /usr/local/share/man )
+  else
+    manpath=( /usr/share/man /usr/local/share/man )
+  fi
+fi
 
 if [[ $a[2] = -s ]] then
   reply=( ${^manpath}/man$a[3]/$1*$2(N:t:r) )

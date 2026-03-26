@@ -24,22 +24,10 @@ typeset cache_dir="${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/
 if [[ ! -d "$cache_dir" ]]; then
   if ! mkdir -p "$cache_dir" 2>/dev/null; then
     # Fallback to a temporary directory if cache creation fails
-    cache_dir=$(mktemp -d 2>/dev/null || echo "/tmp/zsh-completion-cache-$$")
-    cache_dir=$(mktemp -d 2>/dev/null)
+    cache_dir=$(mktemp -d "${TMPDIR:-/tmp}/zsh-completion-cache-XXXXXX" 2>/dev/null)
     if [[ -z "$cache_dir" || ! -d "$cache_dir" ]]; then
-      # Securely generate a random fallback name
-      random_suffix="${RANDOM}-$(date +%s%N)"
-      cache_dir="/tmp/zsh-completion-cache-${random_suffix}"
-      if [[ -d "$cache_dir" ]]; then
-        # Check ownership: only use if owned by current user
-        if [[ "$(stat -c %u "$cache_dir" 2>/dev/null)" -ne "$UID" ]]; then
-          echo "Error: fallback cache directory $cache_dir exists and is not owned by current user." >&2
-          cache_dir=""
-        fi
-      fi
-      if [[ -n "$cache_dir" ]]; then
-        mkdir -p "$cache_dir" 2>/dev/null
-      fi
+      cache_dir="${TMPDIR:-/tmp}/zsh-completion-cache-$$-$RANDOM"
+      mkdir -p "$cache_dir" 2>/dev/null || cache_dir=""
     fi
   fi
 fi
@@ -156,7 +144,7 @@ if [[ -r "$HOME/.mutt/aliases" ]]; then
 fi
 
 # Populate hostname completion.
-# Optimized version that caches results and handles missing files gracefully
+# Version that collects hostnames and handles missing files gracefully
 zstyle -e ':completion:*:hosts' hosts '
   typeset -a _hosts
   typeset -a _ssh_hosts _etc_hosts _ssh_config_hosts
@@ -164,20 +152,20 @@ zstyle -e ':completion:*:hosts' hosts '
   # SSH known hosts (only if files exist)
   [[ -r /etc/ssh_known_hosts ]] && \
     _ssh_hosts+=(${=${=${=${${(f)"$(<"/etc/ssh_known_hosts")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
-  [[ -r ~/.ssh/known_hosts ]] && \
-    _ssh_hosts+=(${=${=${=${${(f)"$(<"~/.ssh/known_hosts")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
+  [[ -r $HOME/.ssh/known_hosts ]] && \
+    _ssh_hosts+=(${=${=${=${${(f)"$(<"$HOME/.ssh/known_hosts")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
   [[ -r /etc/ssh_known_hosts2 ]] && \
     _ssh_hosts+=(${=${=${=${${(f)"$(<"/etc/ssh_known_hosts2")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
-  [[ -r ~/.ssh/known_hosts2 ]] && \
-    _ssh_hosts+=(${=${=${=${${(f)"$(<"~/.ssh/known_hosts2")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
+  [[ -r $HOME/.ssh/known_hosts2 ]] && \
+    _ssh_hosts+=(${=${=${=${${(f)"$(<"$HOME/.ssh/known_hosts2")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
   
   # /etc/hosts (only if readable)
   [[ -r /etc/hosts ]] && \
     _etc_hosts=(${=${(f)"$(<"/etc/hosts")"}%%\#*})
   
   # SSH config hosts (only if file exists)
-  [[ -r ~/.ssh/config ]] && \
-    _ssh_config_hosts=(${=${${${${(@M)${(f)"$(<"~/.ssh/config")"}:#Host *}#Host }:#*\**}:#*\?*}})
+  [[ -r $HOME/.ssh/config ]] && \
+    _ssh_config_hosts=(${=${${${${(@M)${(f)"$(<"$HOME/.ssh/config")"}:#Host *}#Host }:#*\**}:#*\?*}})
   
   _hosts=($_ssh_hosts $_etc_hosts $_ssh_config_hosts)
   reply=($_hosts)
