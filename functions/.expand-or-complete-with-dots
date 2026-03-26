@@ -5,7 +5,10 @@ setopt typeset_silent local_options
 
 typeset WAITING_DOTS="%F{red}…%f"
 
-printf '\e[?7l%s\e[?7h' "${(%)WAITING_DOTS}"
+# Only display dots if terminal supports color and proper output
+if [[ -t 1 ]]; then
+  printf '\e[?7l%s\e[?7h' "${(%)WAITING_DOTS}"
+fi
 
 zle expand-or-complete
 zle redisplay

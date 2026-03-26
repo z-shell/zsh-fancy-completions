@@ -20,11 +20,19 @@ unsetopt FLOW_CONTROL         # Disable start/stop characters in shell editor.
 
 # Enable cache - Some functions, like _apt and _dpkg, are very slow.
 # You can use a cache to proxy the list of results (like the list of available Debian packages)
-if [[ ! -d "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}" ]]; then
-  mkdir -p "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
+typeset cache_dir="${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
+if [[ ! -d "$cache_dir" ]]; then
+  if ! mkdir -p "$cache_dir" 2>/dev/null; then
+    # Fallback to a temporary directory if cache creation fails
+    cache_dir=$(mktemp -d "${TMPDIR:-/tmp}/zsh-completion-cache-XXXXXX" 2>/dev/null)
+    if [[ -z "$cache_dir" || ! -d "$cache_dir" ]]; then
+      cache_dir="${TMPDIR:-/tmp}/zsh-completion-cache-$$-$RANDOM"
+      mkdir -p "$cache_dir" 2>/dev/null || cache_dir=""
+    fi
+  fi
 fi
 
-zstyle ':completion:*' cache-path "${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
+zstyle ':completion:*' cache-path "$cache_dir"
 zstyle ':completion:*' accept-exact '*(N)'
 zstyle ':completion:*' use-cache on
 zstyle ':completion:*' file-sort name
@@ -77,23 +85,14 @@ zstyle ':completion:*'  list-colors  'reply=( "=(#b)(*$PREFIX)(?)*=00=$color[gre
 zstyle ':completion:*' 	matcher-list 'm:ss=ß m:ue=ü m:ue=Ü m:oe=ö m:oe=Ö m:ae=ä m:ae=Ä m:{a-zA-Zöäüa-zÖÄÜ}={A-Za-zÖÄÜA-Zöäü}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
 
 # Adjust mismatch handling - allow one error for every three characters typed in approximate completer
-zstyle ':completion:*:approximate:*'    max-errors 1 numeric
-zstyle -e ':completion:*:approximate:*' max-errors 'reply=( $((($#PREFIX+$#SUFFIX)/3 )) numeric )'
-
-# Adjust match count style
-zstyle ':completion:*:default'  list-prompt '%S%M matches%s'
+# Ensure to cap (at 7) the max-errors to avoid hanging.
+zstyle -e ':completion:*:approximate:*' max-errors 'reply=($((($#PREFIX+$#SUFFIX)/3>7?7:($#PREFIX+$#SUFFIX)/3))numeric)'
 
 # Adjust selection prompt style
 zstyle ':completion:*'  select-prompt %SScrolling active: current selection at %P Lines: %m
 
 # Fuzzy match mistyped completions.
-zstyle ':completion:*' completer _complete _match _approximate
 zstyle ':completion:*:match:*' original only
-zstyle ':completion:*:approximate:*' max-errors 1 numeric
-
-# Increase the number of errors based on the length of the typed word.
-# Ensure to cap (at 7) the max-errors to avoid hanging.
-zstyle -e ':completion:*:approximate:*' max-errors 'reply=($((($#PREFIX+$#SUFFIX)/3>7?7:($#PREFIX+$#SUFFIX)/3))numeric)'
 
 # Adjust completion to offer fish-style highlighting for extra-verbose command completion:
 zstyle -e ':completion:*:-command-:*:commands'	list-colors 'reply=( '\''=(#b)('\''$words[CURRENT]'\''|)*-- #(*)=0=38;5;45=38;5;136'\'' '\''=(#b)('\''$words[CURRENT]'\''|)*=0=38;5;45'\'' )'
@@ -139,17 +138,38 @@ zstyle ':completion:*:*:ogg123:*' file-patterns '*.(ogg|OGG|flac):ogg\ files *(-
 zstyle ':completion:*:*:mocp:*' file-patterns '*.(wav|WAV|mp3|MP3|ogg|OGG|flac):ogg\ files *(-/):directories'
 
 # Mutt
-if [[ -s "$HOME/.mutt/aliases" ]]; then
+if [[ -r "$HOME/.mutt/aliases" ]]; then
   zstyle ':completion:*:*:mutt:*' menu yes select
   zstyle ':completion:*:mutt:*' users ${${${(f)"$(<"$HOME/.mutt/aliases")"}#alias[[:space:]]}%%[[:space:]]*}
 fi
 
 # Populate hostname completion.
-zstyle -e ':completion:*:hosts' hosts 'reply=(
-  ${=${=${=${${(f)"$(cat {/etc/ssh_,~/.ssh/known_}hosts(|2)(N) 2>/dev/null)"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ }
-  ${=${(f)"$(cat /etc/hosts(|)(N) <<(ypcat hosts 2>/dev/null))"}%%\#*}
-  ${=${${${${(@M)${(f)"$(cat ~/.ssh/config 2>/dev/null)"}:#Host *}#Host }:#*\**}:#*\?*}}
-)'
+# Version that collects hostnames and handles missing files gracefully
+zstyle -e ':completion:*:hosts' hosts '
+  typeset -a _hosts
+  typeset -a _ssh_hosts _etc_hosts _ssh_config_hosts
+  
+  # SSH known hosts (only if files exist)
+  [[ -r /etc/ssh_known_hosts ]] && \
+    _ssh_hosts+=(${=${=${=${${(f)"$(<"/etc/ssh_known_hosts")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
+  [[ -r $HOME/.ssh/known_hosts ]] && \
+    _ssh_hosts+=(${=${=${=${${(f)"$(<"$HOME/.ssh/known_hosts")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
+  [[ -r /etc/ssh_known_hosts2 ]] && \
+    _ssh_hosts+=(${=${=${=${${(f)"$(<"/etc/ssh_known_hosts2")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
+  [[ -r $HOME/.ssh/known_hosts2 ]] && \
+    _ssh_hosts+=(${=${=${=${${(f)"$(<"$HOME/.ssh/known_hosts2")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
+  
+  # /etc/hosts (only if readable)
+  [[ -r /etc/hosts ]] && \
+    _etc_hosts=(${=${(f)"$(<"/etc/hosts")"}%%\#*})
+  
+  # SSH config hosts (only if file exists)
+  [[ -r $HOME/.ssh/config ]] && \
+    _ssh_config_hosts=(${=${${${${(@M)${(f)"$(<"$HOME/.ssh/config")"}:#Host *}#Host }:#*\**}:#*\?*}})
+  
+  _hosts=($_ssh_hosts $_etc_hosts $_ssh_config_hosts)
+  reply=($_hosts)
+'
 
 # SSH/SCP/RSYNC
 zstyle ':completion:*:(scp|rsync):*' tag-order 'hosts:-host:host hosts:-domain:domain hosts:-ipaddr:ip\ address *'
@@ -161,15 +181,8 @@ zstyle ':completion:*:(ssh|scp|rsync):*:hosts-domain' ignored-patterns '<->.<->.
 zstyle ':completion:*:(ssh|scp|rsync):*:hosts-ipaddr' ignored-patterns '^(<->.<->.<->.<->|(|::)([[:xdigit:].]##:(#c,2))##(|%*))' '127.0.0.<->' '255.255.255.255' '::1' 'fe80::*'
 
 # Case-insensitive (all), partial-word, and then substring completion.
-if (( CASE_SENSITIVE )); then
-  zstyle ':completion:*' matcher-list 'r:|=*' 'l:|=* r:|=*'
-else
-  if (( HYPHEN_INSENSITIVE )); then
-    zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]-_}={[:upper:][:lower:]_-}' 'r:|=*' 'l:|=* r:|=*'
-  else
-    zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|=*' 'l:|=* r:|=*'
-  fi
-fi
+# Note: The matcher-list is already set above with German umlauts support (line 77)
+# This provides case-insensitive completion as the default behavior
 
 # ‑‑‑‑‑‑‑‑‑ ⸨ DISABLE / IGNORE ⸩ ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑
 
@@ -236,7 +249,9 @@ zstyle ':completion:*:rm:*' file-patterns '*:all-files'
 zmodload -i zsh/complist
 
 # Make sure the completion system is initialized
-(( ${+_comps} )) || autoload -U compinit && compinit -d "${ZI[ZCOMPDUMP_PATH]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi/.zcompdump}"
+# Use the cache directory we set up earlier for the dump file
+typeset zcompdump_path="${cache_dir}/.zcompdump"
+(( ${+_comps} )) || autoload -U compinit && compinit -d "$zcompdump_path"
 
 # Load colors for completion
 autoload -U colors && colors
@@ -250,7 +265,8 @@ autoload -Uz .complete_menu
 zle -N .complete_menu
 
 # Manpage completion
-if (( MANPAGE_COMPLETION )); then
+# Check if the variable is set and non-zero
+if (( ${MANPAGE_COMPLETION:-0} )); then
   autoload -Uz .man_glob
   compctl -K .man_glob -x 'C[-1,-P]' -m - 'R[-*l*,;]' -g '*.(man|[0-9nlpo](|[a-z]))' + -g '*(-/)' -- man
 fi
@@ -260,7 +276,8 @@ compctl -k hosts ftp lftp ncftp ssh w3m lynx links elinks nc telnet rlogin host
 compctl -k hosts -P '@' finger
 
 # Completion waiting dots (for slow completions).
-if (( COMPLETION_WAITING_DOTS )); then
+# Check if the variable is set and non-zero
+if (( ${COMPLETION_WAITING_DOTS:-0} )); then
   autoload -Uz .expand-or-complete-with-dots
   zle -N .expand-or-complete-with-dots
 
@@ -268,3 +285,6 @@ if (( COMPLETION_WAITING_DOTS )); then
   bindkey -M viins "^I" .expand-or-complete-with-dots
   bindkey -M vicmd "^I" .expand-or-complete-with-dots
 fi
+
+# Clean up local variables
+unset cache_dir zcompdump_path
