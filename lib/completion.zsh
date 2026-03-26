@@ -1,5 +1,3 @@
-#!/usr/bin/env zsh
-
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 
@@ -43,9 +41,6 @@ zstyle ':completion:*' rehash true
 # How many completions switch on menu selection
 zstyle ':completion:*' menu select=long
 
-# If there are more than 5 options, allow selecting from a menu with arrows (case insensitive completion!).
-zstyle ':completion:*-case' menu select=5
-
 autoload -Uz .force_rehash
 zstyle ':completion:*'  completer _expand .force_rehash _complete _ignored _correct _approximate _files
 
@@ -79,7 +74,7 @@ zstyle ':completion:*:processes'  command 'ps -au$USER'
 
 # Adjust color-completion style
 zstyle ':completion:*:default'  list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*'  list-colors  'reply=( "=(#b)(*$PREFIX)(?)*=00=$color[green]=$color[bg-green]" )'
+zstyle -e ':completion:*'  list-colors  'reply=( "=(#b)(*$PREFIX)(?)*=00=$color[green]=$color[bg-green]" )'
 
 # Adjust case-insensitive completions for: (all),partial-word and then substring matches
 zstyle ':completion:*' 	matcher-list 'm:ss=ß m:ue=ü m:ue=Ü m:oe=ö m:oe=Ö m:ae=ä m:ae=Ä m:{a-zA-Zöäüa-zÖÄÜ}={A-Za-zÖÄÜA-Zöäü}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
@@ -96,9 +91,6 @@ zstyle ':completion:*:match:*' original only
 
 # Adjust completion to offer fish-style highlighting for extra-verbose command completion:
 zstyle -e ':completion:*:-command-:*:commands'	list-colors 'reply=( '\''=(#b)('\''$words[CURRENT]'\''|)*-- #(*)=0=38;5;45=38;5;136'\'' '\''=(#b)('\''$words[CURRENT]'\''|)*=0=38;5;45'\'' )'
-
-# Array completion element sorting.
-zstyle ':completion:*:*:-subscript-:*' tag-order indexes parameters
 
 # Directories
 # Enable completion of 'cd -<tab>' and 'cd -<ctrl-d>' with menu
@@ -181,7 +173,7 @@ zstyle ':completion:*:(ssh|scp|rsync):*:hosts-domain' ignored-patterns '<->.<->.
 zstyle ':completion:*:(ssh|scp|rsync):*:hosts-ipaddr' ignored-patterns '^(<->.<->.<->.<->|(|::)([[:xdigit:].]##:(#c,2))##(|%*))' '127.0.0.<->' '255.255.255.255' '::1' 'fe80::*'
 
 # Case-insensitive (all), partial-word, and then substring completion.
-# Note: The matcher-list is already set above with German umlauts support (line 77)
+# Note: The matcher-list is set in the COMPLETION CONFIGURATION section with German umlauts support
 # This provides case-insensitive completion as the default behavior
 
 # ‑‑‑‑‑‑‑‑‑ ⸨ DISABLE / IGNORE ⸩ ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑
@@ -221,19 +213,9 @@ zstyle ':completion:*'  insert-unambiguous true
 zstyle ':completion:*:corrections'	format $'%{\e[0;31m%}%d (errors: %e)%{\e[0m%}'
 zstyle ':completion:*:correct:*'	original true
 
-# Prevent completion of functions for commands you don't have
-zstyle ':completion:*:functions'	ignored-patterns '(_*|pre(cmd|exec))'
-
 # Prevent files to be ignored from zcompile
 zstyle ':completion:*:*:zcompile:*'	ignored-patterns '(*~|*.zwc)'
 zstyle ':completion:correct:'		prompt 'correct to: %e'
-
-#Prevent comp to glob the first part of the path to avoid partial globs. (Performance)
-zstyle ':completion:*' accept-exact '*(N)'
-
-# Prevent trailing slash if argument is a directory
-zstyle ':completion:*'			squeeze-slashes true
-zstyle ':completion::complete:*' '\\'
 
 # Prevent completion of backup files as executables
 zstyle ':completion:*:complete:-command-::commands' ignored-patterns '*\~'
@@ -241,17 +223,13 @@ zstyle ':completion:*:complete:-command-::commands' ignored-patterns '*\~'
 # Prevent these filename suffixes to ignore during completion (except after rm command)
 zstyle ':completion:*:*:(^rm):*:*files' ignored-patterns  '*?.(o|c~|old|pro|zwc)' '*~'
 
-# Prevent rm completion
-zstyle ':completion:*:(rm|kill|diff):*' ignore-line other
-zstyle ':completion:*:rm:*' file-patterns '*:all-files'
-
 # Load the zsh/complist module for menu-select widget.
 zmodload -i zsh/complist
 
 # Make sure the completion system is initialized
 # Use the cache directory we set up earlier for the dump file
 typeset zcompdump_path="${cache_dir}/.zcompdump"
-(( ${+_comps} )) || autoload -U compinit && compinit -d "$zcompdump_path"
+(( ${+_comps} )) || { autoload -U compinit && compinit -d "$zcompdump_path" }
 
 # Load colors for completion
 autoload -U colors && colors
