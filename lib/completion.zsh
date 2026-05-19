@@ -30,9 +30,11 @@ if [[ ! -d "$cache_dir" ]]; then
   fi
 fi
 
-zstyle ':completion:*' cache-path "$cache_dir"
+if [[ -n "$cache_dir" ]]; then
+  zstyle ':completion:*' cache-path "$cache_dir"
+  zstyle ':completion:*' use-cache on
+fi
 zstyle ':completion:*' accept-exact '*(N)'
-zstyle ':completion:*' use-cache on
 zstyle ':completion:*' file-sort name
 
 # Enable rehash on completion so new installed programs are found automatically:
@@ -69,15 +71,17 @@ zstyle ':completion:*:*:-subscript-:*'	tag-order indexes parameters
 # Enable matches to separate into groups
 zstyle ':completion:*:matches' group 'yes'
 
-# Enable processes completion for all user processes
-zstyle ':completion:*:processes'  command 'ps -au$USER'
-
 # Adjust color-completion style
 zstyle ':completion:*:default'  list-colors ${(s.:.)LS_COLORS}
 zstyle -e ':completion:*'  list-colors  'reply=( "=(#b)(*$PREFIX)(?)*=00=$color[green]=$color[bg-green]" )'
 
-# Adjust case-insensitive completions for: (all),partial-word and then substring matches
-zstyle ':completion:*' 	matcher-list 'm:ss=ß m:ue=ü m:ue=Ü m:oe=ö m:oe=Ö m:ae=ä m:ae=Ä m:{a-zA-Zöäüa-zÖÄÜ}={A-Za-zÖÄÜA-Zöäü}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+# Adjust case-insensitive completions for: (all), partial-word and then substring matches
+if (( ${COMPLETION_UMLAUT_MATCHING:-0} )); then
+  # German umlaut substitutions: ss↔ß, ue↔ü, oe↔ö, ae↔ä
+  zstyle ':completion:*' matcher-list 'm:ss=ß m:ue=ü m:ue=Ü m:oe=ö m:oe=Ö m:ae=ä m:ae=Ä m:{a-zA-Zöäüa-zÖÄÜ}={A-Za-zÖÄÜA-Zöäü}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+else
+  zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+fi
 
 # Adjust mismatch handling - allow one error for every three characters typed in approximate completer
 # Ensure to cap (at 7) the max-errors to avoid hanging.
@@ -123,12 +127,6 @@ zstyle ':completion:*:manuals'  separate-sections true
 zstyle ':completion:*:manuals.*'  insert-sections   true
 zstyle ':completion:*:man:*'  menu yes select
 
-# Media Players
-zstyle ':completion:*:*:mpg123:*' file-patterns '*.(mp3|MP3):mp3\ files *(-/):directories'
-zstyle ':completion:*:*:mpg321:*' file-patterns '*.(mp3|MP3):mp3\ files *(-/):directories'
-zstyle ':completion:*:*:ogg123:*' file-patterns '*.(ogg|OGG|flac):ogg\ files *(-/):directories'
-zstyle ':completion:*:*:mocp:*' file-patterns '*.(wav|WAV|mp3|MP3|ogg|OGG|flac):ogg\ files *(-/):directories'
-
 # Mutt
 if [[ -r "$HOME/.mutt/aliases" ]]; then
   zstyle ':completion:*:*:mutt:*' menu yes select
@@ -140,7 +138,7 @@ fi
 zstyle -e ':completion:*:hosts' hosts '
   typeset -a _hosts
   typeset -a _ssh_hosts _etc_hosts _ssh_config_hosts
-  
+
   # SSH known hosts (only if files exist)
   [[ -r /etc/ssh_known_hosts ]] && \
     _ssh_hosts+=(${=${=${=${${(f)"$(<"/etc/ssh_known_hosts")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
@@ -150,15 +148,15 @@ zstyle -e ':completion:*:hosts' hosts '
     _ssh_hosts+=(${=${=${=${${(f)"$(<"/etc/ssh_known_hosts2")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
   [[ -r $HOME/.ssh/known_hosts2 ]] && \
     _ssh_hosts+=(${=${=${=${${(f)"$(<"$HOME/.ssh/known_hosts2")"}%%[#| ]*}//\]:[0-9]*/ }//,/ }//\[/ })
-  
+
   # /etc/hosts (only if readable)
   [[ -r /etc/hosts ]] && \
     _etc_hosts=(${=${(f)"$(<"/etc/hosts")"}%%\#*})
-  
+
   # SSH config hosts (only if file exists)
   [[ -r $HOME/.ssh/config ]] && \
     _ssh_config_hosts=(${=${${${${(@M)${(f)"$(<"$HOME/.ssh/config")"}:#Host *}#Host }:#*\**}:#*\?*}})
-  
+
   _hosts=($_ssh_hosts $_etc_hosts $_ssh_config_hosts)
   reply=($_hosts)
 '
@@ -178,39 +176,46 @@ zstyle ':completion:*:(ssh|scp|rsync):*:hosts-ipaddr' ignored-patterns '^(<->.<-
 
 # ‑‑‑‑‑‑‑‑‑ ⸨ DISABLE / IGNORE ⸩ ‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑‑
 
-# Disable sort when completing `git checkout`
+# Git: disable sort on checkout, show descriptions, order branches by recent
 zstyle ':completion:*:git-checkout:*' sort false
+zstyle ':completion:*:git:*' group-order 'main commands' 'alias commands' 'external commands'
+zstyle ':completion:*:git-*:*' description yes
 
-# Disable named-directories autocompletion
-zstyle ':completion:*:cd:*' tag-order local-directories directory-stack path-directories
+# Docker/Podman: enable option stacking (e.g., docker run -it)
+if (( $+commands[docker] || $+commands[podman] )); then
+  zstyle ':completion:*:*:docker:*' option-stacking yes
+  zstyle ':completion:*:*:docker-*:*' option-stacking yes
+fi
+
+# Systemctl: force-list on Linux
+if [[ $ZFC_OS == 'linux' ]]; then
+  zstyle ':completion:*:systemctl:*' force-list always
+fi
 
 # Don't complete not-required/available users/commands
 zstyle ':completion:*:functions' ignored-patterns '(_*|pre(cmd|exec)|TRAP*)'
-zstyle ':completion:*:*:*:users' ignored-patterns \
-        adm amanda apache at avahi avahi-autoipd beaglidx bin cacti canna \
-        clamav daemon dbus distcache dnsmasq dovecot fax ftp games gdm \
-        gkrellmd gopher hacluster haldaemon halt hsqldb ident junkbust kdm \
-        ldap lp mail mailman mailnull man messagebus  mldonkey mysql nagios \
-        named netdump news nfsnobody nobody nscd ntp nut nx obsrun openvpn \
-        operator pcap polkitd postfix postgres privoxy pulse pvm quagga radvd \
-        rpc rpcuser rpm rtkit scard shutdown squid sshd statd svn sync tftp \
-        usbmux uucp vcsa wwwrun xfs '_*'
+
+# Dynamically ignore system users (UID < 1000) in completions
+typeset -a _zfc_sys_users=('_*')
+if [[ -r /etc/passwd ]]; then
+  _zfc_sys_users+=(${(f)"$(awk -F: '$3 < 1000 && $1 != "root" { print $1 }' /etc/passwd 2>/dev/null)"})
+else
+  # Minimal static fallback for systems without /etc/passwd
+  _zfc_sys_users+=(bin daemon nobody root)
+fi
+zstyle ':completion:*:*:*:users' ignored-patterns ${_zfc_sys_users[@]}
+unset _zfc_sys_users
 zstyle '*' single-ignored show
 
 # Ignore multiple entries.
 zstyle ':completion:*:(rm|kill|diff):*' ignore-line other
 zstyle ':completion:*:rm:*' file-patterns '*:all-files'
 
-# Prevent CVS files/directories from being completed
-zstyle ':completion:*:(all-|)files'	ignored-patterns '(|*/)CVS'
-zstyle ':completion:*:cd:*'		ignored-patterns '(*/)#CVS'
-
 # Prevent commands like `rm'
 zstyle ':completion:*:rm:*'		ignore-line yes
 
 # Prevent menu completion for ambiguous initial strings
 zstyle ':completion:*'  insert-unambiguous true
-zstyle ':completion:*:corrections'	format $'%{\e[0;31m%}%d (errors: %e)%{\e[0m%}'
 zstyle ':completion:*:correct:*'	original true
 
 # Prevent files to be ignored from zcompile

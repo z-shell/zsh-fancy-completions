@@ -1,4 +1,7 @@
 
+# Local AI tooling configs (Claude Code Superpowers skills)
+.github/skills/
+
 # Zsh compiled script + zrecompile backup
 *.zwc
 *.zwc.old

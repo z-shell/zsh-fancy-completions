@@ -5,12 +5,12 @@ on:
     branches: [main]
     tags: ["v*.*.*"]
     paths:
-      - "*.zsh"
+      - "**.zsh"
       - "functions/.*"
   pull_request:
     branches: [main]
     paths:
-      - "*.zsh"
+      - "**.zsh"
       - "functions/.*"
   workflow_dispatch: {}
 
@@ -23,11 +23,12 @@ jobs:
       output1: ${{ steps.set-matrix.outputs.files }}
     steps:
       - name: "⤵️ Check out code from GitHub"
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: "Set matrix output"
         id: set-matrix
         run: |
-          MATRIX="$(find . -type d -name 'doc' -prune -o -type f \( -iname '*.zsh' -o -iname '.completion-*' \) -print | jq -ncR '{"include": [{"file": inputs}]}')"
+          FILES=$(find . -type d -name 'doc' -prune -o -type f \( -iname '*.zsh' -o -path './functions/.*' \) -print)
+          MATRIX=$(echo "$FILES" | jq -ncR '{"include": [{"file": inputs} | select(.file | length > 0)]}')
           echo "files=${MATRIX}" >> $GITHUB_OUTPUT
 
   zsh-n:
@@ -38,9 +39,11 @@ jobs:
       matrix: ${{ fromJSON(needs.zsh-matrix.outputs.output1) }}
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       - name: "⚡ Install dependencies"
-        run: sudo apt update && sudo apt-get install -yq zsh
+        run: sudo apt-get update && sudo apt-get install -yq zsh
+      - name: "🔍 zsh --version"
+        run: zsh --version
       - name: "⚡ zsh -n: ${{ matrix.file }}"
         env:
           ZSH_FILE: ${{ matrix.file }}

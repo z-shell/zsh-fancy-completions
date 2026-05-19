@@ -12,12 +12,39 @@
 
 ## 💡 [**Zi**](https://github.com/z-shell/zi) Wiki: [completion management](https://wiki.zshell.dev/docs/getting_started/overview#the-completion-management)
 
+### Requirements
+
+- Zsh >= 5.0.0
+
 ### Completion settings
 
-| Variable                           | Description                          | Default      |
-| ---------------------------------- | ------------------------------------ | ------------ |
-| <kbd>COMPLETION_WAITING_DOTS</kbd> | Show `…` while waiting completion    | <kbd>0</kbd> |
-| <kbd>MANPAGE_COMPLETION</kbd>      | Check and complete available manpage | <kbd>0</kbd> |
+| Variable                                | Description                                    | Default      |
+| --------------------------------------- | ---------------------------------------------- | ------------ |
+| <kbd>COMPLETION_WAITING_DOTS</kbd>      | Show `…` while waiting for slow completions    | <kbd>0</kbd> |
+| <kbd>MANPAGE_COMPLETION</kbd>           | Enable manual page name completion             | <kbd>0</kbd> |
+| <kbd>COMPLETION_UMLAUT_MATCHING</kbd>   | Enable German umlaut substitution in matching  | <kbd>0</kbd> |
+
+### Features
+
+- Case-insensitive, partial-word, and substring completion
+- SSH/SCP/RSYNC hostname completion from known_hosts and ssh config
+- Process/kill completion with colored output
+- Manual page completion by section (opt-in)
+- History-based completion with deduplication
+- Fish-style command highlighting
+- Fuzzy matching with configurable error tolerance
+- Docker/Podman option stacking (auto-detected)
+- Git enhanced completion (branch ordering, descriptions)
+- Systemctl force-list on Linux (auto-detected)
+- Automatic command rehashing for newly installed programs
+
+### Unloading
+
+The plugin follows the [Z-Shell Plugin Standard](https://wiki.zshell.dev/community/zsh_plugin_standard#unload-function) and can be unloaded cleanly:
+
+```zsh
+zsh-fancy-completions_plugin_unload
+```
 
 ### Install `zsh-fancy-completions`
 
