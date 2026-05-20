@@ -26,6 +26,17 @@ if [[ $TERM == 'dumb' ]]; then
   return 0
 else
   source "${0:h}/lib/compatibility.zsh"
+  typeset -gA _zfc_original_options
+  typeset _zfc_option
+  for _zfc_option in COMPLETE_IN_WORD ALWAYS_TO_END PATH_DIRS AUTO_MENU AUTO_LIST \
+    AUTO_PARAM_SLASH HIST_EXPIRE_DUPS_FIRST EXTENDED_GLOB MENU_COMPLETE FLOW_CONTROL; do
+    if [[ -o "$_zfc_option" ]]; then
+      _zfc_original_options[$_zfc_option]='setopt'
+    else
+      _zfc_original_options[$_zfc_option]='unsetopt'
+    fi
+  done
+  unset _zfc_option
   source "${0:h}/lib/completion.zsh"
 fi
 
@@ -39,12 +50,13 @@ zsh-fancy-completions_plugin_unload() {
   zle -D .expand-or-complete-with-dots 2>/dev/null
 
   # Restore original shell options
-  unsetopt COMPLETE_IN_WORD ALWAYS_TO_END PATH_DIRS AUTO_MENU AUTO_LIST \
-    AUTO_PARAM_SLASH HIST_EXPIRE_DUPS_FIRST EXTENDED_GLOB
-  setopt MENU_COMPLETE FLOW_CONTROL
+  local _zfc_option _zfc_state
+  for _zfc_option _zfc_state in "${(@kv)_zfc_original_options}"; do
+    "$_zfc_state" "$_zfc_option"
+  done
 
   # Clean up global variables
-  unset 'Plugins[ZF_COMPLETIONS]' ZFC_OS
+  unset 'Plugins[ZF_COMPLETIONS]' ZFC_OS _zfc_original_options
 
   # Self-destruct
   unfunction zsh-fancy-completions_plugin_unload
