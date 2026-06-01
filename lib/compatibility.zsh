@@ -5,38 +5,38 @@
 
 case "$OSTYPE" in
   android*)
-    typeset -g OS='android'
+    typeset -g ZFC_OS='android'
     ;;
   darwin*)
-    typeset -g OS='darwin'
+    typeset -g ZFC_OS='darwin'
     ;;
   linux*)
-    typeset -g OS='linux'
+    typeset -g ZFC_OS='linux'
     ;;
   freebsd*)
-    typeset -g OS='freebsd'
+    typeset -g ZFC_OS='freebsd'
     ;;
   netbsd*)
-    typeset -g OS='netbsd'
+    typeset -g ZFC_OS='netbsd'
     ;;
   openbsd*)
-    typeset -g OS='openbsd'
+    typeset -g ZFC_OS='openbsd'
     ;;
   sunos*)
-    typeset -g OS='solaris'
+    typeset -g ZFC_OS='solaris'
     ;;
   msys* | cygwin* | mingw*)
-    typeset -g OS='windows'
+    typeset -g ZFC_OS='windows'
     ;;
   nt | win*)
-    typeset -g OS='windows'
+    typeset -g ZFC_OS='windows'
     ;;
   *)
-    typeset -g OS='unknown'
+    typeset -g ZFC_OS='unknown'
     ;;
 esac
 
-if [[ $OS == 'darwin' ]]; then
+if [[ $ZFC_OS == 'darwin' ]]; then
   # Add completion for keg-only brewed curl on macOS when available.
   if (( $+commands[brew] )); then
     typeset brew_prefix=${HOMEBREW_PREFIX:-${HOMEBREW_REPOSITORY:-$commands[brew]:A:h:h}}
@@ -47,7 +47,7 @@ if [[ $OS == 'darwin' ]]; then
     
     # Only add to fpath if the directory exists
     [[ -d "$brew_prefix/opt/curl/share/zsh/site-functions" ]] && \
-      fpath=($brew_prefix/opt/curl/share/zsh/site-functions $fpath)
+      _zfc_add_fpath "$brew_prefix/opt/curl/share/zsh/site-functions" prepend
     
     unset brew_prefix
   fi

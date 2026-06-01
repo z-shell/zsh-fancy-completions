@@ -18,7 +18,7 @@ unsetopt FLOW_CONTROL         # Disable start/stop characters in shell editor.
 
 # Enable cache - Some functions, like _apt and _dpkg, are very slow.
 # You can use a cache to proxy the list of results (like the list of available Debian packages)
-typeset cache_dir="${ZI[CACHE_DIR]:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
+typeset cache_dir="${ZI[CACHE_DIR]-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zi}"
 if [[ ! -d "$cache_dir" ]]; then
   if ! mkdir -p "$cache_dir" 2>/dev/null; then
     # Fallback to a temporary directory if cache creation fails
@@ -106,7 +106,9 @@ zstyle ':completion:*:history-words' list false
 zstyle ':completion:*:history-words' menu yes
 
 # Environmental Variables
-zstyle ':completion::*:(-command-|export):*' fake-parameters ${${${_comps[(I)-value-*]#*,}%%,*}:#-*-}
+if (( ${+_comps} )); then
+  zstyle ':completion::*:(-command-|export):*' fake-parameters ${${${_comps[(I)-value-*]#*,}%%,*}:#-*-}
+fi
 
 # Complete . and .. special directories
 zstyle ':completion:*' special-dirs true
