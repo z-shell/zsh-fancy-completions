@@ -7,17 +7,24 @@
 
 # https://wiki.zshell.dev/community/zsh_plugin_standard#standard-plugins-hash
 typeset -gA Plugins
+source "${0:h}/lib/state.zsh"
+_zfc_capture_state
 Plugins[ZF_COMPLETIONS]="${0:h}"
 
 # https://wiki.zshell.dev/community/zsh_plugin_standard#funtions-directory
 if [[ $PMSPEC != *f* ]]; then
-  fpath+=( "${0:h}/functions" )
+  _zfc_add_fpath "${0:h}/functions"
 fi
 
 # Return if requirements are missing
 if [[ $TERM == 'dumb' ]]; then
   return 0
 else
-  source ${0:h}/lib/compatibility.zsh
-  source ${0:h}/lib/completion.zsh
+  source "${0:h}/lib/compatibility.zsh"
+  {
+    alias zstyle=_zfc_zstyle
+    source "${0:h}/lib/completion.zsh"
+  } always {
+    unalias zstyle
+  }
 fi
