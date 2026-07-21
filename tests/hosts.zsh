@@ -64,6 +64,12 @@ EOF
 # An include cycle must terminate rather than loop forever.
 print 'Include ~/.ssh/config' >>"$test_home/.ssh/config.d/network.conf"
 
+# An extensionless include pattern can match a subdirectory. Reading one would
+# print an error over the completion display, so directories must be skipped.
+mkdir -p "$test_home/.ssh/extensionless/adir"
+print 'Host extensionless-host' >"$test_home/.ssh/extensionless/afile"
+print 'Include ~/.ssh/extensionless/*' >>"$test_home/.ssh/config"
+
 # Wildcard patterns are configuration, not hosts, and must not be offered.
 print -l '' 'Host *' '  ServerAliveInterval 60' >>"$test_home/.ssh/config"
 
@@ -72,12 +78,21 @@ typeset -g HOME=$test_home
 source "$repo_dir/zsh-fancy-completions.plugin.zsh"
 
 # `zstyle -a` on an `-e` style evaluates the code and returns its `reply`.
+# Resolution must stay silent: anything on stderr lands on the completion
+# display mid-keypress.
 typeset -a resolved
-zstyle -a ':completion:*:hosts' hosts resolved
+typeset stderr_file=$test_home/stderr
+zstyle -a ':completion:*:hosts' hosts resolved 2>"$stderr_file"
 
 typeset expected ok=1
+if [[ -s $stderr_file ]]; then
+  print "UNEXPECTED: host resolution wrote to stderr"
+  print -r -- "$(<"$stderr_file")"
+  ok=0
+fi
+
 for expected in direct-host included-host included-alias nested-host \
-  named-dir-host relative-host spaced-host; do
+  named-dir-host relative-host spaced-host extensionless-host; do
   if (( ! ${resolved[(Ie)$expected]} )); then
     print "MISSING: $expected"
     ok=0

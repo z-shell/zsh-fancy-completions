@@ -179,7 +179,10 @@ zstyle -e ':completion:*:hosts' hosts '
     for _ssh_config_inc in ${(@M)_ssh_config_lines:#Include *}; do
       for _ssh_config_pat in ${(Q)${(z)${_ssh_config_inc#Include }}}; do
         [[ $_ssh_config_pat == (/|\~)* ]] || _ssh_config_pat=$HOME/.ssh/$_ssh_config_pat
-        _ssh_config_queue+=(${~_ssh_config_pat}(N))
+        # `-.` keeps only regular files: an extensionless pattern such as
+        # `config.d/*` can otherwise match a subdirectory, and reading one
+        # would print an error over the completion display.
+        _ssh_config_queue+=(${~_ssh_config_pat}(N-.))
       done
     done
   done
