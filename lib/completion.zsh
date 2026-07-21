@@ -159,26 +159,30 @@ zstyle -e ':completion:*:hosts' hosts '
   
   # SSH config hosts. Follow `Include` directives (e.g. the ~/.ssh/config.d/*
   # layout) which OpenSSH expands but a plain read of ~/.ssh/config would miss.
-  # Relative include paths resolve against ~/.ssh; ~ and globs are expanded, and
-  # already-seen files are skipped so include cycles cannot loop forever.
-  typeset -a _ssh_config_queue _ssh_config_files
+  # Each file is read exactly once and without forking: `$(<file)` is the
+  # builtin read, `${~pat}` handles the ~, ~user and glob forms of an include
+  # path, relative paths resolve against ~/.ssh, and a visited set keeps
+  # include cycles from looping.
+  typeset -a _ssh_config_queue _ssh_config_lines
+  typeset -A _ssh_config_seen
   typeset _ssh_config_file _ssh_config_inc _ssh_config_pat
   [[ -r $HOME/.ssh/config ]] && _ssh_config_queue=("$HOME/.ssh/config")
   while (( $#_ssh_config_queue )); do
     _ssh_config_file=$_ssh_config_queue[1]
     shift _ssh_config_queue
-    [[ -r $_ssh_config_file && -z ${_ssh_config_files[(r)$_ssh_config_file]} ]] || continue
-    _ssh_config_files+=("$_ssh_config_file")
-    for _ssh_config_inc in ${(M)${(f)"$(<"$_ssh_config_file")"}:#Include *}; do
-      for _ssh_config_pat in ${(z)${_ssh_config_inc#Include }}; do
-        _ssh_config_pat=${_ssh_config_pat/#\~/$HOME}
-        [[ $_ssh_config_pat == /* ]] || _ssh_config_pat=$HOME/.ssh/$_ssh_config_pat
+    if [[ ! -r $_ssh_config_file ]] || (( ${+_ssh_config_seen[$_ssh_config_file]} )); then
+      continue
+    fi
+    _ssh_config_seen[$_ssh_config_file]=1
+    _ssh_config_lines=(${(f)"$(<"$_ssh_config_file")"})
+    _ssh_config_hosts+=(${=${${${${(@M)_ssh_config_lines:#Host *}#Host }:#*\**}:#*\?*}})
+    for _ssh_config_inc in ${(@M)_ssh_config_lines:#Include *}; do
+      for _ssh_config_pat in ${(Q)${(z)${_ssh_config_inc#Include }}}; do
+        [[ $_ssh_config_pat == (/|\~)* ]] || _ssh_config_pat=$HOME/.ssh/$_ssh_config_pat
         _ssh_config_queue+=(${~_ssh_config_pat}(N))
       done
     done
   done
-  (( $#_ssh_config_files )) && \
-    _ssh_config_hosts=(${=${${${${(@M)${(f)"$(cat $_ssh_config_files 2>/dev/null)"}:#Host *}#Host }:#*\**}:#*\?*}})
   
   _hosts=($_ssh_hosts $_etc_hosts $_ssh_config_hosts)
   reply=($_hosts)
