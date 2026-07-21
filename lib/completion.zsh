@@ -157,9 +157,35 @@ zstyle -e ':completion:*:hosts' hosts '
   [[ -r /etc/hosts ]] && \
     _etc_hosts=(${=${(f)"$(<"/etc/hosts")"}%%\#*})
   
-  # SSH config hosts (only if file exists)
-  [[ -r $HOME/.ssh/config ]] && \
-    _ssh_config_hosts=(${=${${${${(@M)${(f)"$(<"$HOME/.ssh/config")"}:#Host *}#Host }:#*\**}:#*\?*}})
+  # SSH config hosts. Follow `Include` directives (e.g. the ~/.ssh/config.d/*
+  # layout) which OpenSSH expands but a plain read of ~/.ssh/config would miss.
+  # Each file is read exactly once and without forking: `$(<file)` is the
+  # builtin read, `${~pat}` handles the ~, ~user and glob forms of an include
+  # path, relative paths resolve against ~/.ssh, and a visited set keeps
+  # include cycles from looping.
+  typeset -a _ssh_config_queue _ssh_config_lines
+  typeset -A _ssh_config_seen
+  typeset _ssh_config_file _ssh_config_inc _ssh_config_pat
+  [[ -r $HOME/.ssh/config ]] && _ssh_config_queue=("$HOME/.ssh/config")
+  while (( $#_ssh_config_queue )); do
+    _ssh_config_file=$_ssh_config_queue[1]
+    shift _ssh_config_queue
+    if [[ ! -r $_ssh_config_file ]] || (( ${+_ssh_config_seen[$_ssh_config_file]} )); then
+      continue
+    fi
+    _ssh_config_seen[$_ssh_config_file]=1
+    _ssh_config_lines=(${(f)"$(<"$_ssh_config_file")"})
+    _ssh_config_hosts+=(${=${${${${(@M)_ssh_config_lines:#Host *}#Host }:#*\**}:#*\?*}})
+    for _ssh_config_inc in ${(@M)_ssh_config_lines:#Include *}; do
+      for _ssh_config_pat in ${(Q)${(z)${_ssh_config_inc#Include }}}; do
+        [[ $_ssh_config_pat == (/|\~)* ]] || _ssh_config_pat=$HOME/.ssh/$_ssh_config_pat
+        # `-.` keeps only regular files: an extensionless pattern such as
+        # `config.d/*` can otherwise match a subdirectory, and reading one
+        # would print an error over the completion display.
+        _ssh_config_queue+=(${~_ssh_config_pat}(N-.))
+      done
+    done
+  done
   
   _hosts=($_ssh_hosts $_etc_hosts $_ssh_config_hosts)
   reply=($_hosts)
