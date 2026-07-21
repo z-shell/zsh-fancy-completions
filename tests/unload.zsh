@@ -2,7 +2,19 @@
 # vim: ft=zsh sw=2 ts=2 et
 
 typeset repo_dir=${0:A:h:h}
-typeset mode=${1:-preconfigured}
+
+# Both modes matter: `preconfigured` proves prior user settings are restored,
+# `clean` proves nothing is left behind when there was nothing to restore.
+# With no argument, run each in a fresh shell so a bare `zsh tests/unload.zsh`
+# is the whole contract — that is how CI invokes every tests/*.zsh.
+if (( ! $# )); then
+  for mode in preconfigured clean; do
+    zsh "${0:A}" "$mode" || exit 1
+  done
+  exit 0
+fi
+
+typeset mode=$1
 typeset -gA Plugins
 typeset -gA ZI
 typeset -g PMSPEC=

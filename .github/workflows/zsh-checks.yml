@@ -1,20 +1,23 @@
 ---
-name: "✅ Zsh"
+name: "Zsh Checks"
 on:
   push:
     branches: [main]
     tags: ["v*.*.*"]
     paths:
-      - "*.zsh"
-      - "functions/.*"
+      - "**/*.zsh"
+      - "functions/**"
+      - ".github/workflows/zsh-checks.yml"
   pull_request:
     branches: [main]
     paths:
-      - "*.zsh"
-      - "functions/.*"
+      - "**/*.zsh"
+      - "functions/**"
+      - ".github/workflows/zsh-checks.yml"
   workflow_dispatch: {}
 
-permissions: read-all
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -31,7 +34,10 @@ jobs:
       - name: "Set matrix output"
         id: set-matrix
         run: |
-          MATRIX="$(find . -type d -name 'doc' -prune -o -type f \( -iname '*.zsh' -o -iname '.completion-*' \) -print | jq -ncR '{"include": [{"file": inputs}]}')"
+          MATRIX="$(find . -path ./.git -prune -o -path ./.trunk -prune -o \
+            -type d -name 'doc' -prune -o \
+            \( -type f -name '*.zsh' -o -type f -path './functions/*' \) -print \
+            | sort | jq -ncR '{"include": [{"file": inputs}]}')"
           echo "files=${MATRIX}" >> $GITHUB_OUTPUT
 
   zsh-n:
@@ -56,3 +62,23 @@ jobs:
         run: |
           zsh -fc "zcompile ${ZSH_FILE}"; rc=$?
           ls -al "${ZSH_FILE}.zwc"; exit "$rc"
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: "⚡ Install dependencies"
+        run: sudo apt update && sudo apt-get install -yq zsh
+      # Each tests/*.zsh is a hermetic script that needs no arguments and exits
+      # non-zero on failure, so the suite is whatever the directory holds and
+      # new test files gate automatically.
+      - name: "🧪 Run test suite"
+        run: |
+          zsh -f -c '
+            setopt err_exit
+            for t in tests/*.zsh; do
+              print -r -- "== $t"
+              zsh "$t"
+            done
+          '
