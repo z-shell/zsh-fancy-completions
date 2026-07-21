@@ -157,9 +157,28 @@ zstyle -e ':completion:*:hosts' hosts '
   [[ -r /etc/hosts ]] && \
     _etc_hosts=(${=${(f)"$(<"/etc/hosts")"}%%\#*})
   
-  # SSH config hosts (only if file exists)
-  [[ -r $HOME/.ssh/config ]] && \
-    _ssh_config_hosts=(${=${${${${(@M)${(f)"$(<"$HOME/.ssh/config")"}:#Host *}#Host }:#*\**}:#*\?*}})
+  # SSH config hosts. Follow `Include` directives (e.g. the ~/.ssh/config.d/*
+  # layout) which OpenSSH expands but a plain read of ~/.ssh/config would miss.
+  # Relative include paths resolve against ~/.ssh; ~ and globs are expanded, and
+  # already-seen files are skipped so include cycles cannot loop forever.
+  typeset -a _ssh_config_queue _ssh_config_files
+  typeset _ssh_config_file _ssh_config_inc _ssh_config_pat
+  [[ -r $HOME/.ssh/config ]] && _ssh_config_queue=("$HOME/.ssh/config")
+  while (( $#_ssh_config_queue )); do
+    _ssh_config_file=$_ssh_config_queue[1]
+    shift _ssh_config_queue
+    [[ -r $_ssh_config_file && -z ${_ssh_config_files[(r)$_ssh_config_file]} ]] || continue
+    _ssh_config_files+=("$_ssh_config_file")
+    for _ssh_config_inc in ${(M)${(f)"$(<"$_ssh_config_file")"}:#Include *}; do
+      for _ssh_config_pat in ${(z)${_ssh_config_inc#Include }}; do
+        _ssh_config_pat=${_ssh_config_pat/#\~/$HOME}
+        [[ $_ssh_config_pat == /* ]] || _ssh_config_pat=$HOME/.ssh/$_ssh_config_pat
+        _ssh_config_queue+=(${~_ssh_config_pat}(N))
+      done
+    done
+  done
+  (( $#_ssh_config_files )) && \
+    _ssh_config_hosts=(${=${${${${(@M)${(f)"$(cat $_ssh_config_files 2>/dev/null)"}:#Host *}#Host }:#*\**}:#*\?*}})
   
   _hosts=($_ssh_hosts $_etc_hosts $_ssh_config_hosts)
   reply=($_hosts)
