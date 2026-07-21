@@ -79,6 +79,6 @@ jobs:
             setopt err_exit
             for t in tests/*.zsh; do
               print -r -- "== $t"
-              zsh "$t"
+              zsh -f "$t"
             done
           '

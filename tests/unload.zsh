@@ -9,7 +9,10 @@ typeset repo_dir=${0:A:h:h}
 # is the whole contract — that is how CI invokes every tests/*.zsh.
 if (( ! $# )); then
   for mode in preconfigured clean; do
-    zsh "${0:A}" "$mode" || exit 1
+    # -f keeps the nested run hermetic: without it a user's ~/.zshenv can set
+    # options this test asserts on. $? rather than a literal so a mode's real
+    # exit status reaches CI instead of a flattened 1.
+    zsh -f "${0:A}" "$mode" || exit $?
   done
   exit 0
 fi
