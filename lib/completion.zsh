@@ -107,7 +107,7 @@ zstyle ':completion:*:history-words' menu yes
 
 # Environmental Variables
 if (( ${+_comps} )); then
-  zstyle ':completion::*:(-command-|export):*' fake-parameters ${${${_comps[(I)-value-*]#*,}%%,*}:#-*-}
+  zstyle ':completion::*:(-command-|export):*' fake-parameters "${(@)${${_comps[(I)-value-*]#*,}%%,*}:#-*-}"
 fi
 
 # Complete . and .. special directories
@@ -134,7 +134,7 @@ zstyle ':completion:*:*:mocp:*' file-patterns '*.(wav|WAV|mp3|MP3|ogg|OGG|flac):
 # Mutt
 if [[ -r "$HOME/.mutt/aliases" ]]; then
   zstyle ':completion:*:*:mutt:*' menu yes select
-  zstyle ':completion:*:mutt:*' users ${${${(f)"$(<"$HOME/.mutt/aliases")"}#alias[[:space:]]}%%[[:space:]]*}
+  zstyle ':completion:*:mutt:*' users "${(@)${${(f)"$(<"$HOME/.mutt/aliases")"}#alias[[:space:]]}%%[[:space:]]*}"
 fi
 
 # Populate hostname completion.
