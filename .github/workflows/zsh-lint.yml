@@ -1,0 +1,37 @@
+---
+name: Zsh Lint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "zsh-fancy-completions.plugin.zsh"
+      - "functions/**"
+      - "lib/**"
+      - ".github/workflows/zsh-lint.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "zsh-fancy-completions.plugin.zsh"
+      - "functions/**"
+      - "lib/**"
+      - ".github/workflows/zsh-lint.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  zsh-lint:
+    name: Zsh Lint
+    uses: z-shell/.github/.github/workflows/zsh-lint.yml@3bb97532c6ae5db09a38bdffe9a85cb2b0a97bba
+    with:
+      zsh-lint-ref: 3c4966b454fc07a346772a24d8311adab91414ed
+      paths: |
+        zsh-fancy-completions.plugin.zsh
+        functions
+        lib
