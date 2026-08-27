@@ -28,6 +28,7 @@ trap 'rm -rf "$test_cache"' EXIT
 ZI[CACHE_DIR]=$test_cache
 autoload -Uz compinit
 compinit -i -d "$test_cache/.zcompdump"
+typeset -g LS_COLORS=${LS_COLORS-}
 setopt err_return no_unset
 
 if [[ $mode == preconfigured ]]; then
