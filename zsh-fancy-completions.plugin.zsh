@@ -1,30 +1,42 @@
 # -*- mode: zsh; sh-indentation: 2; indent-tabs-mode: nil; sh-basic-offset: 2; -*-
 # vim: ft=zsh sw=2 ts=2 et
 
-# https://wiki.zshell.dev/community/zsh_plugin_standard#zero-handling
-0="${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
-0="${${(M)0:#/*}:-$PWD/$0}"
+# Preserve caller state while resolving this sourced entrypoint.
+() {
+  # The plugin intentionally updates caller options and restores them on unload.
+  # Keep those effects outside the localized source-path resolver.
+  unsetopt localoptions
+
+  typeset source_path plugin_dir
+  () {
+    builtin emulate -L zsh
+
+    source_path="${${(M)1:#/*}:-$PWD/$1}"
+    plugin_dir=${source_path:h}
+  } "$1"
+  typeset -r source_path plugin_dir
 
 # https://wiki.zshell.dev/community/zsh_plugin_standard#standard-plugins-hash
 typeset -gA Plugins
-source "${0:h}/lib/state.zsh"
+source "${plugin_dir}/lib/state.zsh"
 _zfc_capture_state
-Plugins[ZF_COMPLETIONS]="${0:h}"
+Plugins[ZF_COMPLETIONS]="$plugin_dir"
 
 # https://wiki.zshell.dev/community/zsh_plugin_standard#funtions-directory
 if [[ $PMSPEC != *f* ]]; then
-  _zfc_add_fpath "${0:h}/functions"
+  _zfc_add_fpath "${plugin_dir}/functions"
 fi
 
 # Return if requirements are missing
 if [[ $TERM == 'dumb' ]]; then
   return 0
 else
-  source "${0:h}/lib/compatibility.zsh"
+  source "${plugin_dir}/lib/compatibility.zsh"
   {
     alias zstyle=_zfc_zstyle
-    source "${0:h}/lib/completion.zsh"
+    source "${plugin_dir}/lib/completion.zsh"
   } always {
     unalias zstyle
   }
 fi
+} "${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"
