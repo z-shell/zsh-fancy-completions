@@ -30,7 +30,7 @@ jobs:
     name: Zsh Lint
     uses: z-shell/.github/.github/workflows/zsh-lint.yml@6dca2bef75c60106cde7237db5dea2c2eeed243b
     with:
-      zsh-lint-ref: 3c4966b454fc07a346772a24d8311adab91414ed
+      zsh-lint-ref: 900560008382fcdfbed9c2ff26129438d44a1359
       paths: |
         zsh-fancy-completions.plugin.zsh
         functions
