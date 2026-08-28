@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: z-shell/zunit
-          ref: ff8144227b149337ca71be84f5c99e867e2b7344
+          ref: 15061c83373be80b523988121b7ba12c6b2d82dc # v0.8.2
           path: .zunit-tool
           persist-credentials: false
       - name: Build ZUnit
