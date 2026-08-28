@@ -20,8 +20,6 @@ lint:
     - gitleaks@8.28.0
 runtimes:
   enabled:
-    - python@3.10.8
-    - go@1.21.0
     - node@22.16.0
 actions:
   enabled:

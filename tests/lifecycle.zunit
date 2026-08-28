@@ -1,0 +1,63 @@
+#!/usr/bin/env zunit
+
+@setup {
+  typeset -g entrypoint=${testdir:A:h}/zsh-fancy-completions.plugin.zsh
+  typeset -g lifecycle_case=$testdir/cases/lifecycle.zsh
+}
+
+@test 'non-interactive load does not initialize completion or create ZLE, option, or cache state' {
+  run zsh -f "$lifecycle_case" noninteractive "$entrypoint"
+  assert $state equals 0
+}
+
+@test 'repeated source is a no-op and one unload restores first-load state' {
+  run zsh -f "$lifecycle_case" repeated-source "$entrypoint"
+  assert $state equals 0
+}
+
+@test 'hostile caller options and a zstyle alias survive load and unload' {
+  run zsh -f "$lifecycle_case" hostile-options "$entrypoint"
+  assert $state equals 0
+}
+
+@test 'post-load user overrides are preserved on unload' {
+  run zsh -f "$lifecycle_case" post-load-overrides "$entrypoint"
+  assert $state equals 0
+}
+
+@test 'an untouched pre-existing zfc function is restored on unload' {
+  run zsh -f "$lifecycle_case" restore-public-function "$entrypoint"
+  assert $state equals 0
+}
+
+@test 'invalid feature configuration fails before plugin mutation' {
+  run zsh -f "$lifecycle_case" invalid-feature "$entrypoint"
+  assert $state equals 0
+}
+
+@test 'minimal, balanced, and full profiles resolve to documented feature sets' {
+  run zsh -f "$lifecycle_case" profiles "$entrypoint"
+  assert $state equals 0
+}
+
+@test 'doctor is read-only and reports initialization and cache state' {
+  run zsh -f "$lifecycle_case" doctor "$entrypoint"
+  assert $state equals 0
+  assert "$output" contains 'completion system not initialized'
+  assert "$output" contains 'cache feature disabled'
+}
+
+@test 'full profile enables Bash compatibility only after compinit exists' {
+  run zsh -f "$lifecycle_case" bash-compat "$entrypoint"
+  assert $state equals 0
+}
+
+@test 'waiting-dots owns and restores interactive Tab bindings' {
+  run zsh -f "$lifecycle_case" interactive-waiting "$entrypoint"
+  assert $state equals 0
+}
+
+@test 'entrypoint preserves caller 0 across supported option profiles' {
+  run zsh -f "$lifecycle_case" entrypoint-zero "$entrypoint"
+  assert $state equals 0
+}

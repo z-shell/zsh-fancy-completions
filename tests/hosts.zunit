@@ -1,0 +1,51 @@
+#!/usr/bin/env zunit
+
+@setup {
+  typeset -g entrypoint=${testdir:A:h}/zsh-fancy-completions.plugin.zsh
+  typeset -g hosts_case=$testdir/cases/hosts.zsh
+  typeset -g test_home
+  test_home=$(mktemp -d "${TMPDIR:-/tmp}/zfc-hosts-XXXXXX")
+  mkdir -p "$test_home/.ssh/config.d/nested" "$test_home/extra"
+
+  print -r -- $'include ~/.ssh/config.d/*.conf\n  Include relative.conf\nInclude "spaced name.conf"\nInclude "weird[1].conf"\nHOST direct-host uppercase-host\nHost !negated-host wildcard-*\nMatch host match-only' > "$test_home/.ssh/config"
+  print -r -- $'Include ~/.ssh/config.d/nested/*.conf\nHost included-host included-alias' > "$test_home/.ssh/config.d/network.conf"
+  print -r -- 'Host nested-host' > "$test_home/.ssh/config.d/nested/deep.conf"
+  print -r -- 'Host relative-host' > "$test_home/.ssh/relative.conf"
+  print -r -- 'Host spaced-host' > "$test_home/.ssh/spaced name.conf"
+  print -r -- 'Host literal-bracket-host' > "$test_home/.ssh/weird[1].conf"
+  print -r -- 'Host should-not-match-quoted-include' > "$test_home/.ssh/weird1.conf"
+
+  mkdir -p "$test_home/.ssh/extensionless/adir"
+  print -r -- 'Host extensionless-host' > "$test_home/.ssh/extensionless/afile"
+  print -r -- 'Include ~/.ssh/extensionless/*' >> "$test_home/.ssh/config"
+  print -r -- 'Include ~/.ssh/config' >> "$test_home/.ssh/config.d/network.conf"
+}
+
+@teardown {
+  rm -rf -- "$test_home"
+}
+
+@test 'host resolver accepts OpenSSH keyword forms and safe includes' {
+  run zsh -f "$hosts_case" syntax "$entrypoint" "$test_home"
+
+  assert $state equals 0
+  assert "$output" is_empty
+}
+
+@test 'host cache is reused and invalidated when a contributing file changes' {
+  run zsh -f "$hosts_case" invalidation "$entrypoint" "$test_home"
+
+  assert $state equals 0
+}
+
+@test 'explicit host refresh clears only plugin-owned host cache state' {
+  run zsh -f "$hosts_case" refresh "$entrypoint" "$test_home"
+
+  assert $state equals 0
+}
+
+@test 'unload releases a zsh stat module loaded by host resolution' {
+  run zsh -f "$hosts_case" module-ownership "$entrypoint" "$test_home"
+
+  assert $state equals 0
+}

@@ -6,13 +6,13 @@ on:
     tags: ["v*.*.*"]
     paths:
       - "**/*.zsh"
-      - "functions/**"
+      - "**/*.zunit"
       - ".github/workflows/zsh-checks.yml"
   pull_request:
     branches: [main]
     paths:
       - "**/*.zsh"
-      - "functions/**"
+      - "**/*.zunit"
       - ".github/workflows/zsh-checks.yml"
   workflow_dispatch: {}
 
@@ -36,7 +36,7 @@ jobs:
         run: |
           MATRIX="$(find . -path ./.git -prune -o -path ./.trunk -prune -o \
             -type d -name 'doc' -prune -o \
-            \( -type f -name '*.zsh' -o -type f -path './functions/*' \) -print \
+            -type f -name '*.zsh' -print \
             | sort | jq -ncR '{"include": [{"file": inputs}]}')"
           echo "files=${MATRIX}" >> $GITHUB_OUTPUT
 
@@ -70,15 +70,17 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: "⚡ Install dependencies"
         run: sudo apt update && sudo apt-get install -yq zsh
-      # Each tests/*.zsh is a hermetic script that needs no arguments and exits
-      # non-zero on failure, so the suite is whatever the directory holds and
-      # new test files gate automatically.
+      - name: Check out ZUnit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: z-shell/zunit
+          ref: ff8144227b149337ca71be84f5c99e867e2b7344
+          path: .zunit-tool
+          persist-credentials: false
+      - name: Build ZUnit
+        run: |
+          cd .zunit-tool
+          zsh build.zsh
       - name: "🧪 Run test suite"
         run: |
-          zsh -f -c '
-            setopt err_exit
-            for t in tests/*.zsh; do
-              print -r -- "== $t"
-              zsh -f "$t"
-            done
-          '
+          .zunit-tool/zunit --tap tests/*.zunit

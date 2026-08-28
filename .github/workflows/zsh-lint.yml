@@ -6,16 +6,16 @@ on:
     branches: [main]
     paths:
       - "zsh-fancy-completions.plugin.zsh"
-      - "functions/**"
       - "lib/**"
+      - "tests/**"
       - ".github/workflows/zsh-lint.yml"
       - "zsh-lint.json"
   pull_request:
     branches: [main]
     paths:
       - "zsh-fancy-completions.plugin.zsh"
-      - "functions/**"
       - "lib/**"
+      - "tests/**"
       - ".github/workflows/zsh-lint.yml"
       - "zsh-lint.json"
   workflow_dispatch: {}
@@ -55,8 +55,9 @@ jobs:
         env:
           ZSH_LINT_PATHS: |
             zsh-fancy-completions.plugin.zsh
-            functions
             lib
+            tests/cases
+            tests/bench-hosts.zsh
         run: |
           set -euo pipefail
           mapfile -t targets < <(printf '%s\n' "$ZSH_LINT_PATHS" | sed '/^[[:space:]]*$/d')
