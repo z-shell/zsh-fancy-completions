@@ -7,7 +7,6 @@ setopt err_exit pipe_fail
 
 typeset scenario=$1 entrypoint=$2
 typeset -g HOME=$3
-typeset -gA Plugins
 typeset -a resolved
 
 case $scenario in
@@ -22,7 +21,7 @@ case $scenario in
     for expected in negated-host 'wildcard-*' match-only should-not-match-quoted-include; do
       (( ! ${resolved[(Ie)$expected]} ))
     done
-    zsh-fancy-completions_plugin_unload
+zfc_plugin_unload
     ;;
   invalidation)
     source "$entrypoint"
@@ -34,15 +33,15 @@ case $scenario in
     zstyle -a ':completion:*:hosts' hosts resolved
     (( ! ${resolved[(Ie)cache-sentinel]} ))
     (( ${resolved[(Ie)changed-host]} ))
-    zsh-fancy-completions_plugin_unload
+    zfc_plugin_unload
     ;;
   refresh)
     source "$entrypoint"
     zstyle -a ':completion:*:hosts' hosts resolved
     [[ -n $_zfc_host_signature ]]
-    zfc refresh hosts >/dev/null
+    zfc_manage refresh hosts >/dev/null
     [[ -z $_zfc_host_signature && $#_zfc_host_cache == 0 ]]
-    zsh-fancy-completions_plugin_unload
+    zfc_plugin_unload
     ;;
   module-ownership)
     if zmodload -e zsh/stat; then
@@ -51,7 +50,7 @@ case $scenario in
     source "$entrypoint"
     zstyle -a ':completion:*:hosts' hosts resolved
     zmodload -e zsh/stat
-    zsh-fancy-completions_plugin_unload
+    zfc_plugin_unload
     if zmodload -e zsh/stat; then
       exit 11
     fi

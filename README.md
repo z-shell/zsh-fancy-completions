@@ -7,6 +7,18 @@ a standard, plugin-manager-neutral Zsh plugin.
 The plugin configures completion. It does not run `compinit`, download data,
 create cache directories, or invoke external commands while it is loaded.
 
+## Portable shell contract
+
+- Project identifier: `zfc`
+- Authoritative entrypoint: `zsh-fancy-completions.plugin.zsh`
+- Public configuration context: `:zfc:config`
+- Public command: `zfc_manage`
+- Unload function: `zfc_plugin_unload`
+- `lib/`: private eagerly sourced implementation
+
+The plugin has no portable dependency on a manager-owned registry and does not
+create shared `Plugins` state.
+
 ## Requirements
 
 - Zsh 5.9.2 or newer
@@ -52,7 +64,7 @@ autoload -Uz compinit
 compinit
 
 # 4. Only when the bash-compat feature is selected before compinit:
-zfc enable bash
+zfc_manage enable bash
 ```
 
 Plugin managers that own completion initialization should keep owning it. Do
@@ -60,28 +72,29 @@ not add a second `compinit` call for this plugin.
 
 ## Profiles
 
-Set `ZFC_PROFILE` before loading the plugin. The default is `balanced`.
+Set the `profile` property before loading the plugin. The default is
+`balanced`.
 
-| Profile    | Features                                                        | Intended use                                                    |
-| ---------- | --------------------------------------------------------------- | --------------------------------------------------------------- |
-| `minimal`  | `core`                                                          | Predictable menus and grouping with the smallest policy surface |
-| `balanced` | `core matching corrections colors hosts cache processes legacy` | General interactive use                                         |
-| `full`     | Balanced features plus `manpages bash-compat waiting-dots`      | Every supported integration                                     |
+| Profile    | Features                                                   | Intended use                                                    |
+| ---------- | ---------------------------------------------------------- | --------------------------------------------------------------- |
+| `minimal`  | `core`                                                     | Predictable menus and grouping with the smallest policy surface |
+| `balanced` | `core matching corrections colors hosts cache processes`   | General interactive use                                         |
+| `full`     | Balanced features plus `manpages bash-compat waiting-dots` | Every supported integration                                     |
 
 Example:
 
 ```zsh
-typeset -g ZFC_PROFILE=minimal
+zstyle ':zfc:config' profile minimal
 zi light z-shell/zsh-fancy-completions
 ```
 
 ## Feature override
 
-Defining `ZFC_FEATURES` replaces the selected profile's feature list. Unknown
-feature names fail the load before completion state is changed.
+Defining the `features` style replaces the selected profile's feature list.
+Unknown feature names fail the load before completion state is changed.
 
 ```zsh
-typeset -ga ZFC_FEATURES=(core matching colors hosts)
+zstyle ':zfc:config' features core matching colors hosts
 source /path/to/zsh-fancy-completions/zsh-fancy-completions.plugin.zsh
 ```
 
@@ -99,9 +112,8 @@ Available features are:
 | `manpages`     | Native `_man` section and menu styles                                 |
 | `bash-compat`  | `bashcompinit` compatibility, only after `compinit` exists            |
 | `waiting-dots` | Interactive Tab widget that displays `...` during completion          |
-| `legacy`       | Maps the former opt-in variables described below                      |
 
-An explicitly defined empty `ZFC_FEATURES` array applies no features.
+An explicitly defined empty `features` style applies no features.
 
 ## Cache behavior
 
@@ -111,19 +123,25 @@ The default cache path is:
 ${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zsh-fancy-completions
 ```
 
-Override it before load with `ZFC_CACHE_DIR`. Loading only records the native
-completion style, so the directory is created lazily by the completion system
-or explicitly with:
+Override it before load with a style. Loading only records the native completion
+style, so the directory is created lazily by the completion system or
+explicitly with:
 
 ```zsh
-zfc prepare-cache
+zstyle ':zfc:config' cache-dir /path/to/cache
+```
+
+Create it explicitly with:
+
+```zsh
+zfc_manage prepare-cache
 ```
 
 Host discovery uses an in-memory cache. It is invalidated when a contributing
 file or watched include directory changes. Force a refresh with:
 
 ```zsh
-zfc refresh hosts
+zfc_manage refresh hosts
 ```
 
 Host resolution recognizes case-insensitive and indented `Host` and `Include`
@@ -136,7 +154,7 @@ are intentionally not treated as stable host aliases.
 Run the read-only doctor before or after `compinit`:
 
 ```zsh
-zfc doctor
+zfc_manage doctor
 ```
 
 It reports the active profile and features, completion initialization, cache
@@ -148,27 +166,16 @@ parent.
 Other commands:
 
 ```zsh
-zfc features
-zfc cache-path
-zfc enable bash
-zfc --help
+zfc_manage features
+zfc_manage cache-path
+zfc_manage enable bash
+zfc_manage --help
 ```
-
-## Compatibility variables
-
-The `legacy` feature recognizes these pre-load variables:
-
-| Variable                    | Equivalent feature |
-| --------------------------- | ------------------ |
-| `COMPLETION_WAITING_DOTS=1` | `waiting-dots`     |
-| `MANPAGE_COMPLETION=1`      | `manpages`         |
-
-New configurations should select features or a profile directly.
 
 ## Unload contract
 
 ```zsh
-zsh-fancy-completions_plugin_unload
+zfc_plugin_unload
 ```
 
 Repeated sourcing is a no-op. Unload restores styles, public functions,
@@ -176,8 +183,9 @@ widgets, bindings, modules, metadata, and `fpath` entries owned by the first
 successful load. If a user changes one of those values after load, unload
 leaves the newer user value intact.
 
-The plugin does not change shell options and no longer installs legacy
-`compctl` definitions or generic dot-prefixed helper functions.
+The plugin does not change shell options and does not install `compctl`
+definitions, generic dot-prefixed helper functions, compatibility variables,
+or alternate legacy namespaces.
 
 ## Development
 

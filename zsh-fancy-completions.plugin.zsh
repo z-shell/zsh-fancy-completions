@@ -9,18 +9,10 @@
   local -a libraries private_functions
 
   source_path="${${(M)1:#/*}:-$PWD/$1}"
-  plugin_dir=${source_path:A:h}
+  plugin_dir=${source_path:a:h}
 
-  if (( ${+Plugins} )) && [[ ${(t)Plugins} != *association* ]]; then
-    builtin print -u2 -r -- 'zsh-fancy-completions: Plugins must be an associative array'
-    return 2
-  fi
-
-  if [[ ${Plugins[ZF_COMPLETIONS]-} == $plugin_dir ]] &&
-    (( ${+functions[zsh-fancy-completions_plugin_unload]} )); then
-    return 0
-  fi
-  if (( ${+functions[zsh-fancy-completions_plugin_unload]} )); then
+  if (( ${+functions[zfc_plugin_unload]} )); then
+    (( ${+parameters[_zfc_loaded]} && _zfc_loaded )) && return 0
     builtin print -u2 -r -- 'zsh-fancy-completions: unload function already exists'
     return 2
   fi
@@ -33,14 +25,11 @@
     for name in "${private_functions[@]}"; do
       unfunction "$name" 2>/dev/null || true
     done
-    unfunction zsh-fancy-completions_plugin_unload 2>/dev/null || true
+    unfunction zfc_plugin_unload 2>/dev/null || true
     return "$rc"
   fi
 
-  typeset -gA Plugins
   _zfc_capture_state
-  typeset -g _zfc_plugin_dir=$plugin_dir
-  Plugins[ZF_COMPLETIONS]=$plugin_dir
 
   libraries=(compatibility hosts completion widgets doctor)
   for library in "${libraries[@]}"; do
@@ -51,7 +40,7 @@
   done
 
   if (( ! rc )); then
-    _zfc_record_applied_function zfc
+    _zfc_record_applied_function zfc_manage
     _zfc_apply_compatibility || rc=$?
   fi
   if (( ! rc )); then
@@ -64,8 +53,28 @@
   (( rc )) || _zfc_configure_optional_runtime || rc=$?
 
   if (( rc )); then
-    zsh-fancy-completions_plugin_unload
+    zfc_plugin_unload
     return "$rc"
   fi
   _zfc_loaded=1
+  private_functions=(
+    _zfc_apply_compatibility
+    _zfc_apply_completion_styles
+    _zfc_apply_core_styles
+    _zfc_apply_matching_styles
+    _zfc_apply_correction_styles
+    _zfc_apply_color_styles
+    _zfc_apply_host_styles
+    _zfc_apply_cache_styles
+    _zfc_apply_process_styles
+    _zfc_apply_manpage_styles
+    _zfc_configure_optional_runtime
+    _zfc_configure_waiting_widget
+    _zfc_prepare_configuration
+    _zfc_capture_state
+    _zfc_finalize_styles
+  )
+  for name in "${private_functions[@]}"; do
+    unfunction "$name" 2>/dev/null || true
+  done
 } "${ZERO:-${${0:#$ZSH_ARGZERO}:-${(%):-%N}}}"

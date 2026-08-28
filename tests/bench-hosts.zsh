@@ -12,9 +12,8 @@ test_home=$(mktemp -d "${TMPDIR:-/tmp}/zfc-bench-hosts-XXXXXX")
 trap 'rm -rf -- "$test_home"' EXIT
 
 zmodload zsh/datetime
-typeset -gA Plugins
 typeset -g HOME=$test_home
-typeset -g ZFC_PROFILE=balanced
+zstyle ':zfc:config' profile balanced
 mkdir -p "$HOME/.ssh/config.d"
 source "$repo_dir/zsh-fancy-completions.plugin.zsh"
 
@@ -47,4 +46,4 @@ for size in 5 20 60; do
   builtin printf '%-8d %12.3f %12.3f\n' "$size" "$cold" "$cached"
 done
 
-zsh-fancy-completions_plugin_unload
+zfc_plugin_unload

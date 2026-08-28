@@ -25,13 +25,18 @@
   assert $state equals 0
 }
 
-@test 'an untouched pre-existing zfc function is restored on unload' {
+@test 'an untouched pre-existing zfc_manage function is restored on unload' {
   run zsh -f "$lifecycle_case" restore-public-function "$entrypoint"
   assert $state equals 0
 }
 
 @test 'invalid feature configuration fails before plugin mutation' {
   run zsh -f "$lifecycle_case" invalid-feature "$entrypoint"
+  assert $state equals 0
+}
+
+@test 'partial library load failure restores plugin state' {
+  run zsh -f "$lifecycle_case" partial-load "$entrypoint"
   assert $state equals 0
 }
 
@@ -60,4 +65,143 @@
 @test 'entrypoint preserves caller 0 across supported option profiles' {
   run zsh -f "$lifecycle_case" entrypoint-zero "$entrypoint"
   assert $state equals 0
+}
+@test 'Standard 2 load surface and ownership-aware unload are exact' {
+  local -a load_surface=(
+    'function:_zfc_add_fpath'
+    'function:_zfc_add_host_candidate'
+    'function:_zfc_capture_binding'
+    'function:_zfc_capture_function'
+    'function:_zfc_capture_widget'
+    'function:_zfc_doctor'
+    'function:_zfc_doctor_line'
+    'function:_zfc_enable_bash_compatibility'
+    'function:_zfc_ensure_stat_module'
+    'function:_zfc_expand_include'
+    'function:_zfc_expand_or_complete_with_dots'
+    'function:_zfc_feature_enabled'
+    'function:_zfc_host_signature_for'
+    'function:_zfc_index_styles'
+    'function:_zfc_prepare_cache'
+    'function:_zfc_read_etc_hosts'
+    'function:_zfc_read_known_hosts'
+    'function:_zfc_read_ssh_config'
+    'function:_zfc_record_applied_binding'
+    'function:_zfc_record_applied_function'
+    'function:_zfc_record_applied_widget'
+    'function:_zfc_refresh_hosts'
+    'function:_zfc_remove_fpath'
+    'function:_zfc_resolve_hosts'
+    'function:_zfc_restore_functions'
+    'function:_zfc_restore_style_snapshot'
+    'function:_zfc_restore_styles'
+    'function:_zfc_restore_widgets'
+    'function:_zfc_style'
+    'function:_zfc_watch_include_parent'
+    'function:zfc_manage'
+    'function:zfc_plugin_unload'
+    'parameter:_zfc_added_fpath'
+    'parameter:_zfc_applied_bindings'
+    'parameter:_zfc_applied_functions'
+    'parameter:_zfc_applied_styles'
+    'parameter:_zfc_applied_widgets'
+    'parameter:_zfc_bash_enabled'
+    'parameter:_zfc_cache_dir'
+    'parameter:_zfc_features'
+    'parameter:_zfc_host_cache'
+    'parameter:_zfc_host_cache_home'
+    'parameter:_zfc_host_signature'
+    'parameter:_zfc_host_sources'
+    'parameter:_zfc_host_watch_dirs'
+    'parameter:_zfc_initial_styles'
+    'parameter:_zfc_loaded'
+    'parameter:_zfc_original_bindings'
+    'parameter:_zfc_original_function_set'
+    'parameter:_zfc_original_functions'
+    'parameter:_zfc_original_styles'
+    'parameter:_zfc_original_widgets'
+    'parameter:_zfc_owned_modules'
+    'parameter:_zfc_profile'
+    'parameter:_zfc_style_index'
+    'parameter:_zfc_touched_styles'
+    'style::completion:*:(all-|)files:ignored-patterns'
+    'style::completion:*:(rm|kill|diff):*:ignore-line'
+    'style::completion:*:(scp|rsync):*:group-order'
+    'style::completion:*:(scp|rsync):*:tag-order'
+    'style::completion:*:(ssh|scp|rsync):*:hosts-domain:ignored-patterns'
+    'style::completion:*:(ssh|scp|rsync):*:hosts-host:ignored-patterns'
+    'style::completion:*:(ssh|scp|rsync):*:hosts-ipaddr:ignored-patterns'
+    'style::completion:*:*:(^rm):*:*files:ignored-patterns'
+    'style::completion:*:*:(killall|pkill|kill):*:force-list'
+    'style::completion:*:*:(killall|pkill|kill):*:insert-ids'
+    'style::completion:*:*:(killall|pkill|kill):*:menu'
+    'style::completion:*:*:*:*:*:menu'
+    'style::completion:*:*:*:*:processes:command'
+    'style::completion:*:*:-subscript-:*:tag-order'
+    'style::completion:*:*:cd:*:directory-stack:menu'
+    'style::completion:*:*:cd:*:tag-order'
+    'style::completion:*:*:kill:*:processes:list-colors'
+    'style::completion:*:*:mocp:*:file-patterns'
+    'style::completion:*:*:mpg123:*:file-patterns'
+    'style::completion:*:*:mpg321:*:file-patterns'
+    'style::completion:*:*:ogg123:*:file-patterns'
+    'style::completion:*:*:zcompile:*:ignored-patterns'
+    'style::completion:*:-command-:*:commands:list-colors'
+    'style::completion:*:-tilde-:*:group-order'
+    'style::completion:*:accept-exact'
+    'style::completion:*:approximate:*:max-errors'
+    'style::completion:*:cache-path'
+    'style::completion:*:cd:*:ignored-patterns'
+    'style::completion:*:complete:-command-::commands:ignored-patterns'
+    'style::completion:*:completer'
+    'style::completion:*:correct:*:original'
+    'style::completion:*:corrections:format'
+    'style::completion:*:default:list-colors'
+    'style::completion:*:default:list-prompt'
+    'style::completion:*:descriptions:format'
+    'style::completion:*:expand:*:tag-order'
+    'style::completion:*:file-sort'
+    'style::completion:*:functions:ignored-patterns'
+    'style::completion:*:git-checkout:*:sort'
+    'style::completion:*:group-name'
+    'style::completion:*:history-words:list'
+    'style::completion:*:history-words:menu'
+    'style::completion:*:history-words:remove-all-dups'
+    'style::completion:*:history-words:stop'
+    'style::completion:*:hosts:hosts'
+    'style::completion:*:insert-unambiguous'
+    'style::completion:*:list-colors'
+    'style::completion:*:match:*:original'
+    'style::completion:*:matcher-list'
+    'style::completion:*:matches:group'
+    'style::completion:*:menu'
+    'style::completion:*:messages:format'
+    'style::completion:*:options:auto-description'
+    'style::completion:*:options:description'
+    'style::completion:*:processes:command'
+    'style::completion:*:rehash'
+    'style::completion:*:rm:*:file-patterns'
+    'style::completion:*:rm:*:ignore-line'
+    'style::completion:*:select-prompt'
+    'style::completion:*:special-dirs'
+    'style::completion:*:squeeze-slashes'
+    'style::completion:*:ssh:*:group-order'
+    'style::completion:*:ssh:*:tag-order'
+    'style::completion:*:use-cache'
+    'style::completion:*:verbose'
+    'style::completion:*:warnings:format'
+    'style::completion:correct::prompt'
+  )
+
+  zunit_plugin_contract_prime
+  zunit_plugin_contract_snapshot contract_before
+  source "$entrypoint"
+  zunit_plugin_contract_snapshot contract_loaded
+
+  assert contract_before plugin_load_surface contract_loaded "${load_surface[@]}"
+
+  zunit_plugin_contract_snapshot contract_user
+  zfc_plugin_unload
+  zunit_plugin_contract_snapshot contract_after
+  assert contract_before plugin_unloaded contract_loaded contract_user contract_after
 }

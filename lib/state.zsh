@@ -13,37 +13,33 @@ _zfc_feature_enabled() {
 _zfc_prepare_configuration() {
   builtin emulate -L zsh
 
-  local profile=${ZFC_PROFILE:-balanced} feature cache_dir
+  local profile feature cache_dir
   local -a requested resolved valid
   local -A seen
 
   valid=(core matching corrections colors hosts cache processes manpages
-    bash-compat waiting-dots legacy)
+    bash-compat waiting-dots)
 
-  if (( ${+ZFC_FEATURES} )); then
-    requested=("${ZFC_FEATURES[@]}")
+  builtin zstyle -s ':zfc:config' profile profile || profile=balanced
+  if builtin zstyle -a ':zfc:config' features requested; then
+    :
   else
     case $profile in
       minimal)
         requested=(core)
         ;;
       balanced)
-        requested=(core matching corrections colors hosts cache processes legacy)
+        requested=(core matching corrections colors hosts cache processes)
         ;;
       full)
         requested=(core matching corrections colors hosts cache processes
-          manpages bash-compat waiting-dots legacy)
+          manpages bash-compat waiting-dots)
         ;;
       *)
         builtin print -u2 -r -- "zsh-fancy-completions: unknown profile: $profile"
         return 2
         ;;
     esac
-  fi
-
-  if (( ${requested[(Ie)legacy]} )); then
-    (( ${MANPAGE_COMPLETION:-0} )) && requested+=(manpages)
-    (( ${COMPLETION_WAITING_DOTS:-0} )) && requested+=(waiting-dots)
   fi
 
   for feature in "${requested[@]}"; do
@@ -56,7 +52,8 @@ _zfc_prepare_configuration() {
     resolved+=("$feature")
   done
 
-  cache_dir=${ZFC_CACHE_DIR:-${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zsh-fancy-completions}
+  builtin zstyle -s ':zfc:config' cache-dir cache_dir ||
+    cache_dir=${XDG_CACHE_HOME:-${ZDOTDIR:-$HOME/.cache}}/zsh-fancy-completions
   if (( ${resolved[(Ie)cache]} )) && [[ -z $cache_dir ]]; then
     builtin print -u2 -r -- 'zsh-fancy-completions: cache path must not be empty'
     return 2
@@ -98,9 +95,7 @@ _zfc_capture_state() {
   typeset -g _zfc_host_signature='' _zfc_host_cache_home=''
   typeset -g _zfc_bash_enabled=0 _zfc_loaded=0
 
-  typeset -g _zfc_original_plugin_dir_set=${+Plugins[ZF_COMPLETIONS]}
-  typeset -g _zfc_original_plugin_dir=${Plugins[ZF_COMPLETIONS]-}
-  _zfc_capture_function zfc
+  _zfc_capture_function zfc_manage
   _zfc_index_styles
   _zfc_initial_styles=("${(@kv)_zfc_style_index}")
 }
@@ -290,7 +285,7 @@ _zfc_remove_fpath() {
   done
 }
 
-zsh-fancy-completions_plugin_unload() {
+zfc_plugin_unload() {
   builtin emulate -L zsh
 
   local module name
@@ -305,26 +300,18 @@ zsh-fancy-completions_plugin_unload() {
     zmodload -u "$module" 2>/dev/null || true
   done
 
-  if [[ ${Plugins[ZF_COMPLETIONS]-} == ${_zfc_plugin_dir-} ]]; then
-    if (( _zfc_original_plugin_dir_set )); then
-      Plugins[ZF_COMPLETIONS]=$_zfc_original_plugin_dir
-    else
-      unset 'Plugins[ZF_COMPLETIONS]'
-    fi
-  fi
-
   private_functions=(${(M)${(k)functions}:#_zfc_*})
   for name in "${private_functions[@]}"; do
     unfunction "$name" 2>/dev/null || true
   done
   unset _zfc_host_signature _zfc_added_fpath _zfc_applied_bindings
-  unset _zfc_features _zfc_original_plugin_dir_set _zfc_original_function_set
-  unset _zfc_applied_functions _zfc_original_plugin_dir _zfc_owned_modules
+  unset _zfc_features _zfc_original_function_set
+  unset _zfc_applied_functions _zfc_owned_modules
   unset _zfc_cache_dir _zfc_host_cache _zfc_host_cache_home
   unset _zfc_original_styles _zfc_touched_styles _zfc_initial_styles
-  unset _zfc_style_index _zfc_bash_enabled _zfc_plugin_dir
+  unset _zfc_style_index _zfc_bash_enabled
   unset _zfc_host_sources _zfc_original_widgets _zfc_applied_styles
   unset _zfc_applied_widgets _zfc_loaded _zfc_host_watch_dirs
   unset _zfc_original_functions _zfc_profile _zfc_original_bindings
-  unfunction zsh-fancy-completions_plugin_unload
+  unfunction zfc_plugin_unload
 }

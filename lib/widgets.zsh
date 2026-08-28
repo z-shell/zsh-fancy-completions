@@ -16,7 +16,7 @@ _zfc_expand_or_complete_with_dots() {
 _zfc_configure_waiting_widget() {
   builtin emulate -L zsh
 
-  local map widget=zfc-expand-or-complete-with-dots
+  local map widget=zfc_expand_or_complete_with_dots
   [[ -o interactive && $TERM != dumb ]] || return 0
   _zfc_feature_enabled waiting-dots || return 0
 

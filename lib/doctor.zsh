@@ -65,7 +65,7 @@ _zfc_doctor() {
     if [[ ! -o interactive ]]; then
       _zfc_doctor_line info 'waiting-dots deferred in this non-interactive shell'
     else
-      widget=zfc-expand-or-complete-with-dots
+      widget=zfc_expand_or_complete_with_dots
       current=$(zle -l -L "$widget" 2>/dev/null) || current=''
       if [[ $current == "${_zfc_applied_widgets[$widget]-}" ]]; then
         _zfc_doctor_line ok 'waiting-dots widget is installed'
@@ -85,7 +85,7 @@ _zfc_doctor() {
     if (( _zfc_bash_enabled )); then
       _zfc_doctor_line ok 'Bash compatibility enabled'
     elif (( ${+_comps} )); then
-      _zfc_doctor_line warn 'Bash compatibility deferred; run: zfc enable bash'
+      _zfc_doctor_line warn 'Bash compatibility deferred; run: zfc_manage enable bash'
     else
       _zfc_doctor_line info 'Bash compatibility waits for compinit'
     fi
@@ -119,7 +119,7 @@ _zfc_prepare_cache() {
   builtin print -r -- "$_zfc_cache_dir"
 }
 
-zfc() {
+zfc_manage() {
   builtin emulate -L zsh
 
   local command=${1:-help} target=${2:-all}
@@ -158,7 +158,7 @@ zfc() {
       esac
       ;;
     help | -h | --help)
-      builtin print -r -- 'usage: zfc doctor|features|cache-path|prepare-cache|refresh [hosts]|enable bash'
+      builtin print -r -- 'usage: zfc_manage doctor|features|cache-path|prepare-cache|refresh [hosts]|enable bash'
       ;;
     *)
       builtin print -u2 -r -- "zfc: unknown command: $command"
