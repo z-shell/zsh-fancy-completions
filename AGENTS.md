@@ -18,9 +18,9 @@ This project follows the organization-wide [Z-Shell Organization Guidelines](htt
 Run the test suite and syntax checks locally using native Zsh:
 
 ```bash
-# Run test scripts
-zsh -f -c 'setopt err_exit; for t in tests/*.zsh; do zsh -f "$t"; done'
+# Run the ZUnit suite
+zunit --tap tests/*.zunit
 
 # Check syntax
-zsh -n zsh-fancy-completions.plugin.zsh functions/*
+zsh -n zsh-fancy-completions.plugin.zsh lib/*.zsh tests/cases/*.zsh tests/bench-hosts.zsh
 ```
