@@ -26,7 +26,7 @@ This project follows the organization-wide [Z-Shell Organization Guidelines](htt
 
 - Adhere to the canonical [Zsh Plugin Standard](https://wiki.zshell.dev/community/zsh_plugin_standard).
 - Follow the canonical
-  [Zsh Scripting Standard](https://github.com/z-shell/.github/blob/main/.github/instructions/zsh-scripting.instructions.md).
+  [Zsh Scripting Standard](https://github.com/z-shell/.github/blob/main/.github/instructions/zsh/scripting.instructions.md).
 - Entry point: `zsh-fancy-completions.plugin.zsh`
 
 ## Testing & Verification
